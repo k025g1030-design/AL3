@@ -2,6 +2,8 @@
 #include "KamataEngine.h"
 #include <cstdint>	
 
+#include "Player.hpp"
+
 namespace Game{
 	class GameScene {
 	public:
@@ -11,14 +13,14 @@ namespace Game{
         void Finalize();
 
 	private:
-        uint32_t textureHandle_ = 0;
         uint32_t soundDataHandle_ = 0;
         uint32_t voiceHandle_ = 0;
 
-        KamataEngine::Model* model_ = nullptr;
         KamataEngine::DebugCamera* debugCamera_ = nullptr;
-        KamataEngine::WorldTransform worldTransform_;
         KamataEngine::Camera camera_;
+
+        Actor::Player* player_ = nullptr;
+
 
 	};
 

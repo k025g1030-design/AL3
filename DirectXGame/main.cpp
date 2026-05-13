@@ -5,34 +5,29 @@
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
+    KamataEngine::Initialize(L"GC2B_08_ラ_ケツブン");
+    KamataEngine::DirectXCommon* dxCommon = KamataEngine::DirectXCommon::GetInstance();
 
-	KamataEngine::Initialize(L"GC2B_08_ラ_ケツブン");
-	KamataEngine::DirectXCommon* dxCommon = KamataEngine::DirectXCommon::GetInstance();
+    Game::GameScene* gameScene = new Game::GameScene();
+    gameScene->Initialize();
+    
+    while (true) {
+        if (KamataEngine::Update()) {
+            break;
+        }
+        gameScene->Update();
 
-    Game::GameScene gameScene;
+        dxCommon->PreDraw();
 
-    gameScene.Initialize();
+        gameScene->Draw();
 
-	
-	while (true) {
-		if (KamataEngine::Update()) {
-			break;
-		}
-        gameScene.Update();
+        KamataEngine::AxisIndicator::GetInstance()->Draw();
 
-
-
-		dxCommon->PreDraw();
-
-        gameScene.Draw();
-
-		KamataEngine::AxisIndicator::GetInstance()->Draw();
-
-		dxCommon->PostDraw();
-	}
-
-    gameScene.Finalize();
-	KamataEngine::Finalize();
-	
-	return 0;
+        dxCommon->PostDraw();
+    }
+    gameScene->Finalize();
+    delete gameScene;
+    KamataEngine::Finalize();
+    
+    return 0;
 }
