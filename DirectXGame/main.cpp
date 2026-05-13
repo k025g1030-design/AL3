@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include "KamataEngine.h"
+#include "GameScene.hpp"
 
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -8,27 +9,29 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	KamataEngine::Initialize(L"GC2B_08_ラ_ケツブン");
 	KamataEngine::DirectXCommon* dxCommon = KamataEngine::DirectXCommon::GetInstance();
 
-	uint32_t textureHandle_ = KamataEngine::TextureManager::Load("uvChecker.png");
+    Game::GameScene gameScene;
 
-	KamataEngine::Sprite* sprite_ = KamataEngine::Sprite::Create(textureHandle_, {100, 50});
+    gameScene.Initialize();
 
+	
 	while (true) {
 		if (KamataEngine::Update()) {
 			break;
 		}
+        gameScene.Update();
+
+
 
 		dxCommon->PreDraw();
 
-		sprite_->PreDraw();
+        gameScene.Draw();
 
-
-		sprite_->Draw();
-
-		sprite_->PostDraw();
+		KamataEngine::AxisIndicator::GetInstance()->Draw();
 
 		dxCommon->PostDraw();
 	}
-	delete sprite_;
+
+    gameScene.Finalize();
 	KamataEngine::Finalize();
 	
 	return 0;
