@@ -1,7 +1,8 @@
-#include "Player.hpp"
+#include "SkyDome.hpp"
 
-namespace Actor {
-    void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera) {
+
+namespace Game {
+    void SkyDome::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera) {
         assert(model);
         assert(camera);
         model_ = model;
@@ -13,7 +14,7 @@ namespace Actor {
         worldTransform_.rotation_ = { 0, 0, 0 };
         worldTransform_.translation_ = { 0.0f, 0.0f, 0.0f };
     }
-    void Player::Update() {
+    void SkyDome::Update() {
         worldTransform_.matWorld_ = MathUtils::MakeAffineMatrix(
             worldTransform_.scale_,
             worldTransform_.rotation_,
@@ -21,15 +22,16 @@ namespace Actor {
         );
         worldTransform_.TransferMatrix();
     }
-    void Player::Draw() {
+    void SkyDome::Draw() {
 
         model_->Draw(worldTransform_, *camera_);
 
     }
-    void Player::Draw(const KamataEngine::Camera& camera) {
+    void SkyDome::Draw(const KamataEngine::Camera& camera) {
         model_->Draw(worldTransform_, camera);
     }
-    void Player::Finalize() {
+    void SkyDome::Finalize() {
         model_ = nullptr;
     }
+
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "KamataEngine.h"
+#include "Math.hpp"
 
 namespace Actor {
     class Box {

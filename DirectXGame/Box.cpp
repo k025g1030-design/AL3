@@ -1,5 +1,5 @@
 #include "Box.hpp"
-#include "Math.hpp"
+
 
 namespace Actor {
     void Box::Initialize(KamataEngine::Model* model, uint32_t textureHandle, KamataEngine::Camera* camera) {
@@ -33,5 +33,6 @@ namespace Actor {
     }
     void Box::Finalize() {
         KamataEngine::TextureManager::Unload(textureHandle_);
+        model_ = nullptr;
     }
 }

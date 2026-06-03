@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include <cstdint>	
+#include "SkyDome.hpp"
 
 #include "Player.hpp"
 #include "Box.hpp"
@@ -15,10 +16,16 @@ namespace Game{
 
     public:
         const uint32_t modelsize = 512;
+        void SetDebugCameraActive(bool active) {
+            debugCameraActive_ = active;
+        }
 
 	private:
         uint32_t soundDataHandle_ = 0;
         uint32_t voiceHandle_ = 0;
+        SkyDome* skyDome_ = nullptr;
+
+        bool debugCameraActive_ = true;
         
         
 

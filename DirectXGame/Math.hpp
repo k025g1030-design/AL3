@@ -3,7 +3,7 @@
 
 namespace MathUtils {
 
-    KamataEngine::Matrix4x4 MakeIdentity4x4() {
+    static KamataEngine::Matrix4x4 MakeIdentity4x4() {
         KamataEngine::Matrix4x4 result{};
         for (int i = 0; i < 4; ++i) {
             result.m[i][i] = 1.0f;
@@ -11,7 +11,7 @@ namespace MathUtils {
         return result;
     }
 
-    KamataEngine::Matrix4x4 Multiply(const KamataEngine::Matrix4x4& a, const KamataEngine::Matrix4x4& b) {
+    static KamataEngine::Matrix4x4 Multiply(const KamataEngine::Matrix4x4& a, const KamataEngine::Matrix4x4& b) {
         KamataEngine::Matrix4x4 result = {};
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
@@ -24,7 +24,7 @@ namespace MathUtils {
         return result;
     }
 
-    KamataEngine::Matrix4x4 MakeScaleMatrix(const KamataEngine::Vector3& scale) {
+    static KamataEngine::Matrix4x4 MakeScaleMatrix(const KamataEngine::Vector3& scale) {
         KamataEngine::Matrix4x4 scaleMatrix = MakeIdentity4x4();
         scaleMatrix.m[0][0] = scale.x;
         scaleMatrix.m[1][1] = scale.y;
@@ -32,7 +32,7 @@ namespace MathUtils {
         return scaleMatrix;
     }
 
-    KamataEngine::Matrix4x4 MakeRotateXMatrix(float angle) {
+    static KamataEngine::Matrix4x4 MakeRotateXMatrix(float angle) {
         KamataEngine::Matrix4x4 rotateXMatrix = MakeIdentity4x4();
         float cosAngle = cosf(angle);
         float sinAngle = sinf(angle);
@@ -43,7 +43,7 @@ namespace MathUtils {
         return rotateXMatrix;
     }
 
-    KamataEngine::Matrix4x4 MakeRotateYMatrix(float angle) {
+    static KamataEngine::Matrix4x4 MakeRotateYMatrix(float angle) {
         KamataEngine::Matrix4x4 rotateYMatrix = MakeIdentity4x4();
         float cosAngle = cosf(angle);
         float sinAngle = sinf(angle);
@@ -54,7 +54,7 @@ namespace MathUtils {
         return rotateYMatrix;
     }
 
-    KamataEngine::Matrix4x4 MakeRotateZMatrix(float angle) {
+    static KamataEngine::Matrix4x4 MakeRotateZMatrix(float angle) {
         KamataEngine::Matrix4x4 rotateZMatrix = MakeIdentity4x4();
         float cosAngle = cosf(angle);
         float sinAngle = sinf(angle);
@@ -66,7 +66,7 @@ namespace MathUtils {
     }
 
 
-    KamataEngine::Matrix4x4 MakeTranslateMatrix(const KamataEngine::Vector3& translation) {
+    static KamataEngine::Matrix4x4 MakeTranslateMatrix(const KamataEngine::Vector3& translation) {
         KamataEngine::Matrix4x4 translateMatrix = MakeIdentity4x4();
         translateMatrix.m[3][0] = translation.x;
         translateMatrix.m[3][1] = translation.y;
@@ -75,7 +75,7 @@ namespace MathUtils {
     }
 
 
-    KamataEngine::Matrix4x4 MakeAffineMatrix(
+    static KamataEngine::Matrix4x4 MakeAffineMatrix(
         const KamataEngine::Vector3& scale,
         const KamataEngine::Vector3& rotation,
         const KamataEngine::Vector3& translation

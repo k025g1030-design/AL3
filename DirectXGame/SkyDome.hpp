@@ -2,8 +2,8 @@
 #include "KamataEngine.h"
 #include "Math.hpp"
 
-namespace Actor {
-    class Player {
+namespace Game {
+    class SkyDome {
     public:
         void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera);
         void Update();
@@ -11,17 +11,12 @@ namespace Actor {
         void Draw(const KamataEngine::Camera& camera);
         void Finalize();
 
-    public:
-        void SetPosition(const KamataEngine::Vector3& position) {
-            worldTransform_.translation_ = position;
-        }
 
     private:
         KamataEngine::Model* model_ = nullptr;
         KamataEngine::WorldTransform worldTransform_;
         KamataEngine::Camera* camera_ = nullptr;
-
     };
-}
 
+}
 
