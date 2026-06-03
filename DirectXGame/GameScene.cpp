@@ -8,7 +8,7 @@ namespace Game {
         camera_.Initialize();
         // デバッグカメラの生成
         debugCamera_ = new KamataEngine::DebugCamera(1280, 720);
-        SetDebugCameraActive(false);
+        SetDebugCameraActive(true);
 
         if (debugCameraActive_){
             KamataEngine::AxisIndicator::GetInstance()->SetVisible(true);
@@ -17,7 +17,8 @@ namespace Game {
         
 
         // skyDomeの初期化
-        skyDome_ = new SkyDome();//KamataEngine::Model::CreateFromOBJ("skydome", true);
+        skyDome_ = new Game::SkyDome();//KamataEngine::Model::CreateFromOBJ("skydome", true);
+        skyDome_->Initialize(KamataEngine::Model::CreateFromOBJ("SkyDome", true), &camera_);
 
         // stageData_をもとにBoxを生成
         for (size_t y = 0; y < stageData_.size(); y++) {
@@ -47,6 +48,7 @@ namespace Game {
             box->Update();
         }
         player_->Update();
+        skyDome_->Update();
     }
 
     void GameScene::Draw() {
@@ -61,8 +63,10 @@ namespace Game {
         }
         if (debugCameraActive_) {
             player_->Draw(debugCamera_->GetCamera());
+            skyDome_->Draw(debugCamera_->GetCamera());
         } else {
             player_->Draw();
+            skyDome_->Draw();
         }
         KamataEngine::Model::PostDraw();
 
