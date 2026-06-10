@@ -20,17 +20,10 @@ namespace Game {
         skyDome_ = new Game::SkyDome();//KamataEngine::Model::CreateFromOBJ("skydome", true);
         skyDome_->Initialize(KamataEngine::Model::CreateFromOBJ("SkyDome", true), &camera_);
 
-        // stageData_をもとにBoxを生成
-        for (size_t y = 0; y < stageData_.size(); y++) {
-            for (size_t x = 0; x < stageData_[y].size(); x++) {
-                if (stageData_[y][x] == 1) {
-                    Actor::Box* box = new Actor::Box();
-                    box->Initialize(KamataEngine::Model::Create(), KamataEngine::TextureManager::Load("images/Wall.png"), &camera_);
-                    box->SetPosition({ x * 2.0f, y * 2.0f, 0.0f });
-                    boxes_.push_back(box);
-                }
-            }
-        }
+        mapChipField_.LoadData();
+
+        GenerateBlocks();
+
         // player initialization should be after boxes initialization to ensure the player is drawn on top of the boxes
         player_ = new Actor::Player();
         player_->Initialize(KamataEngine::Model::CreateFromOBJ("skull"), &camera_);
@@ -44,7 +37,7 @@ namespace Game {
             debugCamera_->Update();
         }
 
-        for (auto box : boxes_) {
+        for (auto box : mapChipField_.GetBlocks()) {
             box->Update();
         }
         player_->Update();
@@ -54,7 +47,7 @@ namespace Game {
     void GameScene::Draw() {
         KamataEngine::Model::PreDraw();
 
-        for (auto box : boxes_) {
+        for (auto box : mapChipField_.GetBlocks()) {
             if (debugCameraActive_) {
                 box->Draw(debugCamera_->GetCamera());
             } else {
@@ -77,10 +70,6 @@ namespace Game {
         delete player_;
         delete skyDome_;
 
-        for (auto box : boxes_) {
-            box->Finalize();
-            delete box;
-        }
-        boxes_.clear();
+        mapChipField_.Finalize();
     }
 }

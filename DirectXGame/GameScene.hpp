@@ -2,9 +2,10 @@
 #include "KamataEngine.h"
 #include <cstdint>	
 #include "SkyDome.hpp"
+#include "MapChipField.hpp"
 
 #include "Player.hpp"
-#include "Box.hpp"
+
 
 namespace Game{
 	class GameScene {
@@ -20,33 +21,36 @@ namespace Game{
             debugCameraActive_ = active;
         }
 
+        void GenerateBlocks() {
+            // stageData_をもとにBoxを生成
+            for (uint32_t y = 0; y < mapChipField_.GetNumBlockVertical(); y++) {
+                for (uint32_t x = 0; x < mapChipField_.GetNumBlockHorizontal(); x++) {
+                    if (mapChipField_.GetMapChipTypeByIndex(x, y) == Assets::MapChipType::kBlock) {
+                        Assets::Box* box = new Assets::Box();
+                        box->Initialize(KamataEngine::Model::Create(), KamataEngine::TextureManager::Load("images/Wall.png"), &camera_);
+                        box->SetPosition(mapChipField_.GetMapChipPositionByIndex(x, y));
+                        mapChipField_.AddBlock(box);
+                    }
+                }
+            }
+        }
+
 	private:
         uint32_t soundDataHandle_ = 0;
         uint32_t voiceHandle_ = 0;
         SkyDome* skyDome_ = nullptr;
 
         bool debugCameraActive_ = true;
-        
-        
 
         KamataEngine::DebugCamera* debugCamera_ = nullptr;
         KamataEngine::Camera camera_;
 
-        std::vector<std::vector<int>> stageData_ = {
-            { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-            { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
-            { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
-        };  
+
 
         Actor::Player* player_ = nullptr;
-        std::vector<Actor::Box*> boxes_;
+
+        Assets::MapChipField mapChipField_;
+       
 
 
         

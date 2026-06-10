@@ -2,7 +2,7 @@
 #include "KamataEngine.h"
 #include "Math.hpp"
 
-namespace Actor {
+namespace Assets {
     class Box {
     public:
         void Initialize(KamataEngine::Model* model, uint32_t textureHandle, KamataEngine::Camera* camera);
