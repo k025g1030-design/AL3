@@ -6,6 +6,8 @@
 #include <sstream>
 #include <string>
 #include "Box.hpp"
+#include "GameConfig.hpp"
+
 
 namespace Assets {
     
@@ -49,7 +51,7 @@ namespace Assets {
 
         KamataEngine::Vector3 GetMapChipPositionByIndex(uint32_t x, uint32_t y) const {
             return KamataEngine::Vector3(
-                kBlockWidth * x , kBlockHeight * (GetNumBlockVertical() - 1 - y), 0.0f
+                Block::Config::kBlockWidth * x , Block::Config::kBlockHeight * (GetNumBlockVertical() - 1 - y), 0.0f
             );
         }
 

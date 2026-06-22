@@ -2,26 +2,9 @@
 #include "KamataEngine.h"
 #include "Math.hpp"
 #include <numbers>
+#include "GameConfig.hpp"
 
 namespace Actor {
-    // プレイヤーの幅
-    static inline const float kPlayerWidth = 2.0f;
-    // プレイヤーの高さ
-    static inline const float kPlayerHeight = 2.0f;
-    // 加速度
-    static inline const float kAcceleration = 0.1f;
-    // 減速率
-    static inline const float kAttenuation = 0.3f;
-    // 走る速度の上限
-    static inline const float kLimitRunSpeed = 1.5f;
-    // 重力加速度 
-    static inline const float kGravityAcceleration = 0.2f;
-    // 落下速度の上限
-    static inline const float kLimitFallSpeed = 3.0f;
-    // ジャンプの初速
-    static inline const float kJumpAcceleration = 1.3f;
-    // ターンにかかる時間
-    static inline const float kTimeTurn = 0.3f;
 
     enum class LRDirection {
         kRight = 0,
@@ -56,7 +39,7 @@ namespace Actor {
         }
         void StartTurn_() {
             turnFirstRotationY_ = worldTransform_.rotation_.y;
-            turnTimer_ = kTimeTurn;
+            turnTimer_ = World::Config::kTimeTurn;
         }
 
         void UpdateTurn_() {
@@ -71,7 +54,7 @@ namespace Actor {
                 };
 
                 float destinationRotationY = destinationRotationYTable[static_cast<int>(lrDirection_)];
-                worldTransform_.rotation_.y = turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * EaseInOutBounce_(1.0f - turnTimer_ / kTimeTurn);
+                worldTransform_.rotation_.y = turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * EaseInOutBounce_(1.0f - turnTimer_ / World::Config::kTimeTurn);
             }
 
         }

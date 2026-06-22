@@ -271,6 +271,7 @@
   <ItemGroup>
     <ClInclude Include="Box.hpp" />
     <ClInclude Include="CameraController.hpp" />
+    <ClInclude Include="GameConfig.hpp" />
     <ClInclude Include="GameScene.hpp" />
     <ClInclude Include="MapChipField.hpp" />
     <ClInclude Include="Math.hpp" />

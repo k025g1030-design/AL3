@@ -1,6 +1,5 @@
 #include "Player.hpp"
 #include <algorithm>
-#include "Box.hpp"
 
 namespace Actor {
     void Player::Initialize(KamataEngine::Model* model, const KamataEngine::Vector3& position) {
@@ -20,7 +19,7 @@ namespace Actor {
         bool landing = false;
 
         if (velocity_.y < 0.0f) {
-            if (worldTransform_.translation_.y <= Assets::kBlockHeight) {
+            if (worldTransform_.translation_.y <= Block::Config::kBlockHeight) {
                 landing = true;
             }
         }
@@ -29,14 +28,14 @@ namespace Actor {
             if (input->PushKey(DIK_A) || input->PushKey(DIK_D)) {
                 KamataEngine::Vector3 acceleration = { 0.0f, 0.0f, 0.0f };
                 if (input->PushKey(DIK_A)) {
-                    acceleration.x -= kAcceleration;
+                    acceleration.x -= World::Config::kAcceleration;
                     if (lrDirection_ != LRDirection::kLeft) {
                         lrDirection_ = LRDirection::kLeft;
                         StartTurn_();
                     }
                 }
                 if (input->PushKey(DIK_D)) {
-                    acceleration.x += kAcceleration;
+                    acceleration.x += World::Config::kAcceleration;
                     if (lrDirection_ != LRDirection::kRight) {
                         lrDirection_ = LRDirection::kRight;
                         StartTurn_();
@@ -45,15 +44,15 @@ namespace Actor {
                 AddVelocity(acceleration);
 
                 // 速度の上限を設定
-                velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+                velocity_.x = std::clamp(velocity_.x, -World::Config::kLimitRunSpeed, World::Config::kLimitRunSpeed);
 
             } else {
                 // 減速
-                velocity_.x *= (1.0f - kAttenuation);
+                velocity_.x *= (1.0f - World::Config::kAttenuation);
             }
 
             if (input->PushKey(DIK_SPACE)) {
-                velocity_ = MathUtils::V3Plus(velocity_, { 0.0f, kJumpAcceleration, 0.0f });
+                velocity_ = MathUtils::V3Plus(velocity_, { 0.0f, World::Config::kJumpAcceleration, 0.0f });
                 //onGround_ = false;
             }
             UpdateTurn_();
@@ -72,14 +71,14 @@ namespace Actor {
             velocity_.y = max(velocity_.y, -kLimitFallSpeed);
             Move();
             */
-            velocity_ = MathUtils::V3Plus(velocity_, { 0.0f, -kGravityAcceleration, 0.0f });
+            velocity_ = MathUtils::V3Plus(velocity_, { 0.0f, -World::Config::kGravityAcceleration, 0.0f });
 
             // 落下速度の上限を設定
-            velocity_.y = max(velocity_.y, -kLimitFallSpeed);
+            velocity_.y = max(velocity_.y, -World::Config::kLimitFallSpeed);
 
             if (landing) {
-                worldTransform_.translation_.y = Assets::kBlockHeight;
-                velocity_.x *= (1.0f - kAttenuation);
+                worldTransform_.translation_.y = Block::Config::kBlockHeight;
+                velocity_.x *= (1.0f - World::Config::kAttenuation);
                 velocity_.y = 0.0f;
                 onGround_ = true;
             }
