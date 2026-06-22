@@ -15,6 +15,16 @@ namespace Assets {
         if (!stageData_.data.empty()) {
             stageData_.kNumBlockHorizontal = static_cast<uint32_t>(stageData_.data[0].size());
         }
+        // プレイヤーと敵のリスポーン位置を取得
+        for (uint32_t y = 0; y < stageData_.kNumBlockVertical; ++y) {
+            for (uint32_t x = 0; x < stageData_.kNumBlockHorizontal; ++x) {
+                if (stageData_.data[y][x] == MapChipType::kPlayerRespawn) {
+                    stageData_.playerRespawnSnapshot = GetMapChipPositionByIndex(x, y);
+                } else if (stageData_.data[y][x] == MapChipType::kEnemyRespawn) {
+                    stageData_.enemyRespawnSnapshot.push_back(GetMapChipPositionByIndex(x, y));
+                }
+            }
+        }
 
 
     }

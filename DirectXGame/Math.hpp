@@ -96,4 +96,12 @@ namespace MathUtils {
 
         return result;
     }
+
+    static KamataEngine::Vector3 V3Plus(const KamataEngine::Vector3& a, const KamataEngine::Vector3& b) {
+        return { a.x + b.x, a.y + b.y, a.z + b.z };
+    }
+
+    static KamataEngine::Vector3 V3Minus(const KamataEngine::Vector3& a, const KamataEngine::Vector3& b) {
+        return { a.x - b.x, a.y - b.y, a.z - b.z };
+    }
 }

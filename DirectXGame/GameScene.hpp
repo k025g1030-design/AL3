@@ -27,12 +27,21 @@ namespace Game{
                 for (uint32_t x = 0; x < mapChipField_.GetNumBlockHorizontal(); x++) {
                     if (mapChipField_.GetMapChipTypeByIndex(x, y) == Assets::MapChipType::kBlock) {
                         Assets::Box* box = new Assets::Box();
-                        box->Initialize(KamataEngine::Model::Create(), KamataEngine::TextureManager::Load("images/Wall.png"), &camera_);
-                        box->SetPosition(mapChipField_.GetMapChipPositionByIndex(x, y));
+                        box->Initialize(
+                            KamataEngine::Model::Create(), 
+                            KamataEngine::TextureManager::Load("images/Wall.png"), 
+                            &camera_, 
+                            mapChipField_.GetMapChipPositionByIndex(x, y)
+                        );
                         mapChipField_.AddBlock(box);
                     }
                 }
             }
+        }
+
+        void GeneratePlayer() {
+            player_ = new Actor::Player();
+            player_->Initialize(KamataEngine::Model::CreateFromOBJ("player"), &camera_, mapChipField_.GetPlayerRespawnPosition());
         }
 
 	private:
@@ -40,7 +49,7 @@ namespace Game{
         uint32_t voiceHandle_ = 0;
         SkyDome* skyDome_ = nullptr;
 
-        bool debugCameraActive_ = true;
+        bool debugCameraActive_ = false;
 
         KamataEngine::DebugCamera* debugCamera_ = nullptr;
         KamataEngine::Camera camera_;
@@ -50,6 +59,7 @@ namespace Game{
         Actor::Player* player_ = nullptr;
 
         Assets::MapChipField mapChipField_;
+       
        
 
 

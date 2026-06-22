@@ -25,9 +25,7 @@ namespace Game {
         GenerateBlocks();
 
         // player initialization should be after boxes initialization to ensure the player is drawn on top of the boxes
-        player_ = new Actor::Player();
-        player_->Initialize(KamataEngine::Model::CreateFromOBJ("skull"), &camera_);
-        player_->SetPosition({ 2.0f, 2.0f, 0.0f });
+        GeneratePlayer();
         
     }
 

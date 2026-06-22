@@ -8,18 +8,21 @@
 #include "Box.hpp"
 
 namespace Assets {
-    static inline const float kBlockWidth = 2.0f;  
-    static inline const float kBlockHeight = 2.0f;
+    
 
     enum class MapChipType : uint32_t {
         kBlank = 0,
         kBlock = 1,
+        kPlayerRespawn = 2,
+        kEnemyRespawn = 3,
     };
 
     struct MapChipData {
         std::vector<std::vector<MapChipType>> data;
         uint32_t kNumBlockVertical = 0;
         uint32_t kNumBlockHorizontal = 0;
+        KamataEngine::Vector3 playerRespawnSnapshot = { 0.0f, 0.0f, 0.0f };
+        std::vector<KamataEngine::Vector3> enemyRespawnSnapshot = {};
     };
 
     class MapChipField {
@@ -46,7 +49,7 @@ namespace Assets {
 
         KamataEngine::Vector3 GetMapChipPositionByIndex(uint32_t x, uint32_t y) const {
             return KamataEngine::Vector3(
-                kBlockWidth * x, kBlockHeight * (GetNumBlockVertical() - 1 - y), 0.0f
+                kBlockWidth * x , kBlockHeight * (GetNumBlockVertical() - 1 - y), 0.0f
             );
         }
 
@@ -63,6 +66,12 @@ namespace Assets {
         }
         uint32_t GetNumBlockHorizontal() const {
             return stageData_.kNumBlockHorizontal;
+        }
+        KamataEngine::Vector3 GetPlayerRespawnPosition() const {
+            return stageData_.playerRespawnSnapshot;
+        }
+        std::vector<KamataEngine::Vector3> GetEnemyRespawnPositions() const {
+            return stageData_.enemyRespawnSnapshot;
         }
 
         

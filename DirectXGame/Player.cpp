@@ -1,7 +1,8 @@
 #include "Player.hpp"
+#include <numbers>
 
 namespace Actor {
-    void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera) {
+    void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position) {
         assert(model);
         assert(camera);
         model_ = model;
@@ -9,17 +10,28 @@ namespace Actor {
 
         // ワールドトランスフォームの初期化
         worldTransform_.Initialize();
-        worldTransform_.scale_ = { 0.05f, 0.05f, 0.05f };
-        worldTransform_.rotation_ = { 0, 0, 0 };
-        worldTransform_.translation_ = { 0.0f, 0.0f, 0.0f };
+        worldTransform_.scale_ = { 2.0f, 2.0f, 2.0f };
+        //worldTransform_.scale_ = { 0.06f, 0.06f, 0.06f };
+        worldTransform_.rotation_ = { 0, std::numbers::pi_v<float> / 2.0f, 0 };
+        worldTransform_.translation_ = position;
+        //worldTransform_.rotation_ = { 0, std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float> / 2.0f };
     }
     void Player::Update() {
-        worldTransform_.matWorld_ = MathUtils::MakeAffineMatrix(
-            worldTransform_.scale_,
-            worldTransform_.rotation_,
-            worldTransform_.translation_
-        );
-        worldTransform_.TransferMatrix();
+        KamataEngine::Input* input = KamataEngine::Input::GetInstance();
+        if (input->PushKey(DIK_A) || input->PushKey(DIK_D)) {
+            KamataEngine::Vector3 acceleration = { 0.0f, 0.0f, 0.0f };
+            if (input->PushKey(DIK_A)) {
+                acceleration.x -= kAcceleration;
+            }
+            if (input->PushKey(DIK_D)) {
+                acceleration.x += kAcceleration;
+            }
+            AddVelocity(acceleration);
+            
+        }
+        Move();
+
+        ApplyTransform_();
     }
     void Player::Draw() {
 
@@ -27,6 +39,7 @@ namespace Actor {
 
     }
     void Player::Draw(const KamataEngine::Camera& camera) {
+
         model_->Draw(worldTransform_, camera);
     }
     void Player::Finalize() {

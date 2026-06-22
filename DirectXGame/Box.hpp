@@ -3,9 +3,12 @@
 #include "Math.hpp"
 
 namespace Assets {
+    static inline const float kBlockWidth = 2.0f;
+    static inline const float kBlockHeight = 2.0f;
+
     class Box {
     public:
-        void Initialize(KamataEngine::Model* model, uint32_t textureHandle, KamataEngine::Camera* camera);
+        void Initialize(KamataEngine::Model* model, uint32_t textureHandle, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
         void Update();
         void Draw();
         void Draw(const KamataEngine::Camera& camera);
@@ -14,6 +17,16 @@ namespace Assets {
     public:
         void SetPosition(const KamataEngine::Vector3& position) {
             worldTransform_.translation_ = position;
+        }
+
+    private:
+        void ApplyTransform_() {
+            worldTransform_.matWorld_ = MathUtils::MakeAffineMatrix(
+                worldTransform_.scale_,
+                worldTransform_.rotation_,
+                worldTransform_.translation_
+            );
+            worldTransform_.TransferMatrix();
         }
 
 
