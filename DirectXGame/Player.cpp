@@ -1,12 +1,11 @@
 #include "Player.hpp"
-#include <numbers>
+#include <algorithm>
+#include "Box.hpp"
 
 namespace Actor {
-    void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position) {
+    void Player::Initialize(KamataEngine::Model* model, const KamataEngine::Vector3& position) {
         assert(model);
-        assert(camera);
         model_ = model;
-        camera_ = camera;
 
         // ワールドトランスフォームの初期化
         worldTransform_.Initialize();
@@ -18,29 +17,85 @@ namespace Actor {
     }
     void Player::Update() {
         KamataEngine::Input* input = KamataEngine::Input::GetInstance();
-        if (input->PushKey(DIK_A) || input->PushKey(DIK_D)) {
-            KamataEngine::Vector3 acceleration = { 0.0f, 0.0f, 0.0f };
-            if (input->PushKey(DIK_A)) {
-                acceleration.x -= kAcceleration;
+        bool landing = false;
+
+        if (velocity_.y < 0.0f) {
+            if (worldTransform_.translation_.y <= Assets::kBlockHeight) {
+                landing = true;
             }
-            if (input->PushKey(DIK_D)) {
-                acceleration.x += kAcceleration;
-            }
-            AddVelocity(acceleration);
-            
         }
-        Move();
+
+        if (onGround_) {
+            if (input->PushKey(DIK_A) || input->PushKey(DIK_D)) {
+                KamataEngine::Vector3 acceleration = { 0.0f, 0.0f, 0.0f };
+                if (input->PushKey(DIK_A)) {
+                    acceleration.x -= kAcceleration;
+                    if (lrDirection_ != LRDirection::kLeft) {
+                        lrDirection_ = LRDirection::kLeft;
+                        StartTurn_();
+                    }
+                }
+                if (input->PushKey(DIK_D)) {
+                    acceleration.x += kAcceleration;
+                    if (lrDirection_ != LRDirection::kRight) {
+                        lrDirection_ = LRDirection::kRight;
+                        StartTurn_();
+                    }
+                }
+                AddVelocity(acceleration);
+
+                // 速度の上限を設定
+                velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+
+            } else {
+                // 減速
+                velocity_.x *= (1.0f - kAttenuation);
+            }
+
+            if (input->PushKey(DIK_SPACE)) {
+                velocity_ = MathUtils::V3Plus(velocity_, { 0.0f, kJumpAcceleration, 0.0f });
+                //onGround_ = false;
+            }
+            UpdateTurn_();
+
+            
+            
+            if (velocity_.y > 0.0f) {
+                onGround_ = false;
+            }
+
+        } else {
+            /*
+            // 空中にいる場合は重力を適用
+            velocity_.y -= kGravityAcceleration;
+            // 落下速度の上限を設定
+            velocity_.y = max(velocity_.y, -kLimitFallSpeed);
+            Move();
+            */
+            velocity_ = MathUtils::V3Plus(velocity_, { 0.0f, -kGravityAcceleration, 0.0f });
+
+            // 落下速度の上限を設定
+            velocity_.y = max(velocity_.y, -kLimitFallSpeed);
+
+            if (landing) {
+                worldTransform_.translation_.y = Assets::kBlockHeight;
+                velocity_.x *= (1.0f - kAttenuation);
+                velocity_.y = 0.0f;
+                onGround_ = true;
+            }
+        }
+        
+        // turnchange中は移動しない
+        if (!IsTurning_()) {
+            Move();
+        }
 
         ApplyTransform_();
     }
-    void Player::Draw() {
+   
+    void Player::Draw(const KamataEngine::Camera* camera) {
 
-        model_->Draw(worldTransform_, *camera_);
-
-    }
-    void Player::Draw(const KamataEngine::Camera& camera) {
-
-        model_->Draw(worldTransform_, camera);
+        model_->Draw(worldTransform_, *camera);
     }
     void Player::Finalize() {
         model_ = nullptr;

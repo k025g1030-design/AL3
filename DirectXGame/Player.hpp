@@ -1,18 +1,38 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Math.hpp"
+#include <numbers>
 
 namespace Actor {
+    // プレイヤーの幅
     static inline const float kPlayerWidth = 2.0f;
+    // プレイヤーの高さ
     static inline const float kPlayerHeight = 2.0f;
+    // 加速度
     static inline const float kAcceleration = 0.1f;
+    // 減速率
+    static inline const float kAttenuation = 0.3f;
+    // 走る速度の上限
+    static inline const float kLimitRunSpeed = 1.5f;
+    // 重力加速度 
+    static inline const float kGravityAcceleration = 0.2f;
+    // 落下速度の上限
+    static inline const float kLimitFallSpeed = 3.0f;
+    // ジャンプの初速
+    static inline const float kJumpAcceleration = 1.3f;
+    // ターンにかかる時間
+    static inline const float kTimeTurn = 0.3f;
+
+    enum class LRDirection {
+        kRight = 0,
+        kLeft = 1,
+    };
 
     class Player {
     public:
-        void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
+        void Initialize(KamataEngine::Model* model, const KamataEngine::Vector3& position);
         void Update();
-        void Draw();
-        void Draw(const KamataEngine::Camera& camera);
+        void Draw(const KamataEngine::Camera* camera);
         void Finalize();
 
     public:
@@ -28,8 +48,56 @@ namespace Actor {
         void Move() {
             worldTransform_.translation_ = MathUtils::V3Plus(worldTransform_.translation_, velocity_);
         }
+        
 
     private:
+        bool IsTurning_() const {
+            return turnTimer_ > 0.0f;
+        }
+        void StartTurn_() {
+            turnFirstRotationY_ = worldTransform_.rotation_.y;
+            turnTimer_ = kTimeTurn;
+        }
+
+        void UpdateTurn_() {
+            if (turnTimer_ > 0.0f) {
+                turnTimer_ -= 1 / 60.0f; // Assuming 60 FPS, adjust as needed
+                if (turnTimer_ < 0.0f) {
+                    turnTimer_ = 0.0f;
+                }
+                float destinationRotationYTable[] = {
+                    std::numbers::pi_v<float> / 2.0f, // 右
+                    std::numbers::pi_v<float> *3.0f / 2.0f, // 左
+                };
+
+                float destinationRotationY = destinationRotationYTable[static_cast<int>(lrDirection_)];
+                worldTransform_.rotation_.y = turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * EaseInOutBounce_(1.0f - turnTimer_ / kTimeTurn);
+            }
+
+        }
+
+        float EaseOutBounce_(float t) {
+            if (t < 1 / 2.75f) {
+                return 7.5625f * t * t;
+            } else if (t < 2 / 2.75f) {
+                t -= 1.5f / 2.75f;
+                return 7.5625f * t * t + 0.75f;
+            } else if (t < 2.5f / 2.75f) {
+                t -= 2.25f / 2.75f;
+                return 7.5625f * t * t + 0.9375f;
+            } else {
+                t -= 2.625f / 2.75f;
+                return 7.5625f * t * t + 0.984375f;
+            }
+        }
+
+        float EaseInOutBounce_(float t) {
+            return t < 0.5f
+                ? (1 - EaseOutBounce_(1 - 2 * t)) / 2
+                : (1 + EaseOutBounce_(2 * t - 1)) / 2;
+        }
+          
+
         void ApplyTransform_() {
             worldTransform_.matWorld_ = MathUtils::MakeAffineMatrix(
                 worldTransform_.scale_,
@@ -42,9 +110,14 @@ namespace Actor {
     private:
         KamataEngine::Model* model_ = nullptr;
         KamataEngine::WorldTransform worldTransform_;
-        KamataEngine::Camera* camera_ = nullptr;
 
         KamataEngine::Vector3 velocity_ = { 0.0f, 0.0f, 0.0f };
+        LRDirection lrDirection_ = LRDirection::kRight;
+
+        float turnFirstRotationY_ = 0.0f;
+        float turnTimer_ = 0.0f;
+        bool onGround_ = true;
+
 
 
     };

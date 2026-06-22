@@ -8,10 +8,9 @@ namespace Assets {
 
     class Box {
     public:
-        void Initialize(KamataEngine::Model* model, uint32_t textureHandle, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
+        void Initialize(KamataEngine::Model* model, uint32_t textureHandle, const KamataEngine::Vector3& position);
         void Update();
-        void Draw();
-        void Draw(const KamataEngine::Camera& camera);
+        void Draw(const KamataEngine::Camera* camera);
         void Finalize();
 
     public:
@@ -33,7 +32,6 @@ namespace Assets {
     private:
         KamataEngine::Model* model_ = nullptr;
         KamataEngine::WorldTransform worldTransform_;
-        KamataEngine::Camera* camera_ = nullptr;
 
         uint32_t textureHandle_ = 0;
 

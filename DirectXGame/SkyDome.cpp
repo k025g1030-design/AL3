@@ -22,13 +22,9 @@ namespace Game {
         );
         worldTransform_.TransferMatrix();
     }
-    void SkyDome::Draw() {
 
-        model_->Draw(worldTransform_, *camera_);
-
-    }
-    void SkyDome::Draw(const KamataEngine::Camera& camera) {
-        model_->Draw(worldTransform_, camera);
+    void SkyDome::Draw(const KamataEngine::Camera* camera) {
+        model_->Draw(worldTransform_, *camera);
     }
     void SkyDome::Finalize() {
         model_ = nullptr;

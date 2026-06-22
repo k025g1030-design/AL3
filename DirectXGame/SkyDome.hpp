@@ -7,8 +7,7 @@ namespace Game {
     public:
         void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera);
         void Update();
-        void Draw();
-        void Draw(const KamataEngine::Camera& camera);
+        void Draw(const KamataEngine::Camera* camera);
         void Finalize();
 
 

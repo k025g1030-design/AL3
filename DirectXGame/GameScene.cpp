@@ -4,21 +4,12 @@
 
 namespace Game {
     void GameScene::Initialize() {
-        // カメラの初期化
-        camera_.Initialize();
-        // デバッグカメラの生成
-        debugCamera_ = new KamataEngine::DebugCamera(1280, 720);
-        SetDebugCameraActive(true);
-
-        if (debugCameraActive_){
-            KamataEngine::AxisIndicator::GetInstance()->SetVisible(true);
-            KamataEngine::AxisIndicator::GetInstance()->SetTargetCamera(&debugCamera_->GetCamera());
-        }
+        cameraController_.Initialize();
         
 
         // skyDomeの初期化
         skyDome_ = new Game::SkyDome();//KamataEngine::Model::CreateFromOBJ("skydome", true);
-        skyDome_->Initialize(KamataEngine::Model::CreateFromOBJ("SkyDome", true), &camera_);
+        skyDome_->Initialize(KamataEngine::Model::CreateFromOBJ("SkyDome", true), cameraController_.GetCamera());
 
         mapChipField_.LoadData();
 
@@ -31,9 +22,7 @@ namespace Game {
 
     void GameScene::Update() {
 
-        if (debugCameraActive_) {
-            debugCamera_->Update();
-        }
+        cameraController_.Update();
 
         for (auto box : mapChipField_.GetBlocks()) {
             box->Update();
@@ -46,25 +35,17 @@ namespace Game {
         KamataEngine::Model::PreDraw();
 
         for (auto box : mapChipField_.GetBlocks()) {
-            if (debugCameraActive_) {
-                box->Draw(debugCamera_->GetCamera());
-            } else {
-                box->Draw(camera_);
-            }
+            box->Draw(cameraController_.GetCamera());
         }
-        if (debugCameraActive_) {
-            player_->Draw(debugCamera_->GetCamera());
-            skyDome_->Draw(debugCamera_->GetCamera());
-        } else {
-            player_->Draw();
-            skyDome_->Draw();
-        }
+        
+        player_->Draw(cameraController_.GetCamera());
+        skyDome_->Draw(cameraController_.GetCamera());
+
         KamataEngine::Model::PostDraw();
 
        
     }
     void GameScene::Finalize() {
-        delete debugCamera_;
         delete player_;
         delete skyDome_;
 

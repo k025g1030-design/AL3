@@ -2,12 +2,10 @@
 
 
 namespace Assets {
-    void Box::Initialize(KamataEngine::Model* model, uint32_t textureHandle, KamataEngine::Camera* camera, const KamataEngine::Vector3& position) {
+    void Box::Initialize(KamataEngine::Model* model, uint32_t textureHandle, const KamataEngine::Vector3& position) {
         assert(model);
-        assert(camera);
         model_ = model;
         textureHandle_ = textureHandle;
-        camera_ = camera;
         
 
         // ワールドトランスフォームの初期化
@@ -19,15 +17,9 @@ namespace Assets {
     void Box::Update() {
         ApplyTransform_();
     }
-    void Box::Draw() {
-
-
-        model_->Draw(worldTransform_, *camera_, textureHandle_);
-
-    }
-    void Box::Draw(const KamataEngine::Camera& camera) {
-
-        model_->Draw(worldTransform_, camera, textureHandle_);
+    
+    void Box::Draw(const KamataEngine::Camera* camera) {
+        model_->Draw(worldTransform_, *camera, textureHandle_);
     }
     void Box::Finalize() {
         KamataEngine::TextureManager::Unload(textureHandle_);

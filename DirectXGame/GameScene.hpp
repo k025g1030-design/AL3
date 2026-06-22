@@ -3,6 +3,7 @@
 #include <cstdint>	
 #include "SkyDome.hpp"
 #include "MapChipField.hpp"
+#include "CameraController.hpp"
 
 #include "Player.hpp"
 
@@ -17,9 +18,7 @@ namespace Game{
 
     public:
         const uint32_t modelsize = 512;
-        void SetDebugCameraActive(bool active) {
-            debugCameraActive_ = active;
-        }
+        
 
         void GenerateBlocks() {
             // stageData_をもとにBoxを生成
@@ -30,7 +29,6 @@ namespace Game{
                         box->Initialize(
                             KamataEngine::Model::Create(), 
                             KamataEngine::TextureManager::Load("images/Wall.png"), 
-                            &camera_, 
                             mapChipField_.GetMapChipPositionByIndex(x, y)
                         );
                         mapChipField_.AddBlock(box);
@@ -41,7 +39,7 @@ namespace Game{
 
         void GeneratePlayer() {
             player_ = new Actor::Player();
-            player_->Initialize(KamataEngine::Model::CreateFromOBJ("player"), &camera_, mapChipField_.GetPlayerRespawnPosition());
+            player_->Initialize(KamataEngine::Model::CreateFromOBJ("player"), mapChipField_.GetPlayerRespawnPosition());
         }
 
 	private:
@@ -49,10 +47,9 @@ namespace Game{
         uint32_t voiceHandle_ = 0;
         SkyDome* skyDome_ = nullptr;
 
-        bool debugCameraActive_ = false;
+        
 
-        KamataEngine::DebugCamera* debugCamera_ = nullptr;
-        KamataEngine::Camera camera_;
+        Game::CameraController cameraController_;
 
 
 
