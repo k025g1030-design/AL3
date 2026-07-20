@@ -76,6 +76,13 @@ namespace Assets {
             return stageData_.enemyRespawnSnapshot;
         }
 
+        float GetMapChipWidth() const {
+            return mapChipWidth_;
+        }
+        float GetMapChipHeight() const {
+            return mapChipHeight_;
+        }
+
         
     
     private:
@@ -151,7 +158,9 @@ namespace Assets {
         }
 
     private:
-        MapChipData stageData_;
+        MapChipData stageData_ = {};
+        float mapChipWidth_ = 0;
+        float mapChipHeight_ = 0;
 
         std::vector<Box*> blocks_;
 

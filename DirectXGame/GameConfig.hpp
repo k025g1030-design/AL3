@@ -13,6 +13,13 @@ namespace Player::Config {
 
 }
 
+namespace Camera::Config {
+    // カメラの高さ
+    inline constexpr float kCameraHeight = 5.0f;
+    // カメラの距離
+    inline constexpr float kCameraDistance = 15.0f;
+}
+
 namespace World::Config {
     // 加速度
     inline constexpr float kAcceleration = 0.1f;

@@ -25,7 +25,8 @@ namespace Assets {
                 }
             }
         }
-
+        mapChipWidth_ = stageData_.kNumBlockHorizontal * Block::Config::kBlockWidth;
+        mapChipHeight_ = stageData_.kNumBlockVertical * Block::Config::kBlockHeight;
 
     }
 }

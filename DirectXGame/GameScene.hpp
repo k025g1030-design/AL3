@@ -22,16 +22,16 @@ namespace Game{
 
         void GenerateBlocks() {
             // stageData_をもとにBoxを生成
-            for (uint32_t y = 0; y < mapChipField_.GetNumBlockVertical(); y++) {
-                for (uint32_t x = 0; x < mapChipField_.GetNumBlockHorizontal(); x++) {
-                    if (mapChipField_.GetMapChipTypeByIndex(x, y) == Assets::MapChipType::kBlock) {
+            for (uint32_t y = 0; y < currentMap_->GetNumBlockVertical(); y++) {
+                for (uint32_t x = 0; x < currentMap_->GetNumBlockHorizontal(); x++) {
+                    if (currentMap_->GetMapChipTypeByIndex(x, y) == Assets::MapChipType::kBlock) {
                         Assets::Box* box = new Assets::Box();
                         box->Initialize(
                             KamataEngine::Model::Create(), 
                             KamataEngine::TextureManager::Load("images/Wall.png"), 
-                            mapChipField_.GetMapChipPositionByIndex(x, y)
+                            currentMap_->GetMapChipPositionByIndex(x, y)
                         );
-                        mapChipField_.AddBlock(box);
+                        currentMap_->AddBlock(box);
                     }
                 }
             }
@@ -39,7 +39,12 @@ namespace Game{
 
         void GeneratePlayer() {
             player_ = new Actor::Player();
-            player_->Initialize(KamataEngine::Model::CreateFromOBJ("player"), mapChipField_.GetPlayerRespawnPosition());
+            player_->Initialize(KamataEngine::Model::CreateFromOBJ("player"), currentMap_->GetPlayerRespawnPosition());
+        }
+
+        void GenerateMapData() {
+            currentMap_ = new Assets::MapChipField();
+            currentMap_->LoadData();
         }
 
 	private:
@@ -55,7 +60,7 @@ namespace Game{
 
         Actor::Player* player_ = nullptr;
 
-        Assets::MapChipField mapChipField_;
+        Assets::MapChipField* currentMap_ = nullptr;
        
        
 

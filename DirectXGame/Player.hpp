@@ -19,6 +19,10 @@ namespace Actor {
         void Finalize();
 
     public:
+        KamataEngine::WorldTransform& GetWorldTransform() {
+            return worldTransform_;
+        }
+
         void SetPosition(const KamataEngine::Vector3& position) {
             worldTransform_.translation_ = position;
         }

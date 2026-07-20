@@ -17,6 +17,9 @@ namespace Assets {
             worldTransform_.translation_ = position;
         }
 
+        void GetSize() {
+        }
+
     private:
         void ApplyTransform_() {
             worldTransform_.matWorld_ = MathUtils::MakeAffineMatrix(

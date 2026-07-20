@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 
+
 namespace MathUtils {
 
     static KamataEngine::Matrix4x4 MakeIdentity4x4() {
@@ -104,4 +105,6 @@ namespace MathUtils {
     static KamataEngine::Vector3 V3Minus(const KamataEngine::Vector3& a, const KamataEngine::Vector3& b) {
         return { a.x - b.x, a.y - b.y, a.z - b.z };
     }
+
+   
 }
