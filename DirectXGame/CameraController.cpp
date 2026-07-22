@@ -19,7 +19,34 @@ namespace Game {
         if (debugCamera_) {
             debugCamera_->Update();
         }
+
+
+        // 玩家目前的世界座標
+        KamataEngine::Vector3 targetPosition =
+            target_->GetWorldTransform().translation_;
+
+        // 玩家目前的速度
+        const KamataEngine::Vector3 velocity =
+            target_->GetVelocity();
+
+        // 將速度乘上調整倍率後，加到目標位置
+        targetPosition.x += velocity.x * Camera::Config::kVelocityBias;
+        targetPosition.y += velocity.y * Camera::Config::kVelocityBias;
+
+        // Camera 的 Z 不跟著玩家改變
+        targetPosition.z = camera_.translation_.z;
+
+        // 從目前 Camera 座標向目標座標平滑補間
+        camera_.translation_ = MathUtils::Lerp(
+            camera_.translation_,
+            targetPosition,
+            Camera::Config::kInterpolationRate
+        );
+
         ConstrainSideScrollCamera();
+
+
+
         camera_.UpdateMatrix();
         //Reset();
         //ConstrainSideScrollCamera_(

@@ -18,6 +18,10 @@ namespace Camera::Config {
     inline constexpr float kCameraHeight = 5.0f;
     // カメラの距離
     inline constexpr float kCameraDistance = 15.0f;
+
+    inline constexpr float kVelocityBias = 0.3f;
+
+    inline constexpr float kInterpolationRate = 0.1f;
 }
 
 namespace World::Config {
@@ -36,4 +40,3 @@ namespace World::Config {
     // ターンにかかる時間
     inline constexpr float kTimeTurn = 0.3f;
 }
-

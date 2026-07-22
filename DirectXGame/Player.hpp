@@ -23,6 +23,10 @@ namespace Actor {
             return worldTransform_;
         }
 
+        KamataEngine::Vector3 GetVelocity() const {
+            return velocity_;
+        }   
+
         void SetPosition(const KamataEngine::Vector3& position) {
             worldTransform_.translation_ = position;
         }

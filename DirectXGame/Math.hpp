@@ -106,5 +106,12 @@ namespace MathUtils {
         return { a.x - b.x, a.y - b.y, a.z - b.z };
     }
 
-   
+
+    static KamataEngine::Vector3 Lerp(const KamataEngine::Vector3& a, const KamataEngine::Vector3& b, float t) {
+        return {
+            a.x + (b.x - a.x) * t,
+            a.y + (b.y - a.y) * t,
+            a.z + (b.z - a.z) * t
+        };
+    }
 }

@@ -12,6 +12,9 @@ namespace Assets {
 }
 
 namespace Game {
+
+
+
     struct Rect {
         float left;
         float top;
@@ -48,6 +51,9 @@ namespace Game {
             return &camera_;
         }
 
+        KamataEngine::Vector3 GetVelocity() const {
+            return velocity_;
+        }
         
 
         
@@ -92,6 +98,8 @@ namespace Game {
         Assets::MapChipField* mapField_ = nullptr;
         KamataEngine::Vector3 targetOffset_ = { 0, 0, -50.0f };
 
+        KamataEngine::Vector3 velocity_{};
+    
 
 
         bool debugCameraActive_ = false;
