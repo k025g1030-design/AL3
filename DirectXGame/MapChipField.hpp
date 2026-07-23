@@ -1,169 +1,89 @@
 #pragma once
-#include <cstdint>      
-#include <vector>
-#include <map>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include "Box.hpp"
-#include "GameConfig.hpp"
 
+#include <cctype>
+#include <cstdint>
+#include <fstream>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include "GameConfig.hpp"
+#include "MapObject.hpp"
 
 namespace Assets {
-    
 
-    enum class MapChipType : uint32_t {
-        kBlank = 0,
-        kBlock = 1,
-        kPlayerRespawn = 2,
-        kEnemyRespawn = 3,
-    };
+class MapObjectFactory;
 
-    struct MapChipData {
-        std::vector<std::vector<MapChipType>> data;
-        uint32_t kNumBlockVertical = 0;
-        uint32_t kNumBlockHorizontal = 0;
-        KamataEngine::Vector3 playerRespawnSnapshot = { 0.0f, 0.0f, 0.0f };
-        std::vector<KamataEngine::Vector3> enemyRespawnSnapshot = {};
-    };
+enum class MapChipType : uint32_t {
+    kBlank = 0,
+    kBlock = 1,
+    kPlayerRespawn = 2,
+    kEnemyRespawn = 3,
 
-    class MapChipField {
+    // Component Pattern示例类型
+    kDamageFloor = 4,
+    kBreakableBox = 5,
+    kTeleporter = 6,
+    kBounceFloor = 7,
+};
 
-    public:
-        void ResetData();
-        void LoadData();
+struct MapChipData {
+    std::vector<std::vector<MapChipType>> data{};
+    uint32_t kNumBlockVertical = 0;
+    uint32_t kNumBlockHorizontal = 0;
+    KamataEngine::Vector3 playerRespawnSnapshot{0.0f, 0.0f, 0.0f};
+    std::vector<KamataEngine::Vector3> enemyRespawnSnapshot{};
+};
 
-        void Finalize() {
-            for (auto block : blocks_) {
-                block->Finalize();
-                delete block;
-            }
-            blocks_.clear();
-        }
+class MapChipField {
+public:
+    void ResetData();
+    void LoadData(const std::string& filename = "./Resources/datas/blocks.csv");
 
-        MapChipType GetMapChipTypeByIndex(uint32_t x, uint32_t y) const {
-            if (y < stageData_.data.size() && x < stageData_.data[y].size()) {
-                return stageData_.data[y][x];
-            } else {
-                return MapChipType::kBlank; // 範囲外は空白とみなす
-            }
-        }
+    // 将CSV中的类型交给Factory，生成真正的MapObject。
+    void BuildObjects(MapObjectFactory& factory);
 
-        KamataEngine::Vector3 GetMapChipPositionByIndex(uint32_t x, uint32_t y) const {
-            return KamataEngine::Vector3(
-                Block::Config::kBlockWidth * x , Block::Config::kBlockHeight * (GetNumBlockVertical() - 1 - y), 0.0f
-            );
-        }
+    void UpdateObjects();
+    void DrawObjects(const KamataEngine::Camera* camera);
+    void Finalize();
 
-        void AddBlock(Box* block) {
-            blocks_.push_back(block);
-        }
-        
-        std::vector<Box*> GetBlocks() const {
-            return blocks_;
-        }
+    // 规则网格就是Broad Phase，只返回AABB附近格子的物件。
+    std::vector<MapObject*> QueryNearby(const MapAABB& bounds) const;
 
-        uint32_t GetNumBlockVertical() const {
-            return stageData_.kNumBlockVertical;
-        }
-        uint32_t GetNumBlockHorizontal() const {
-            return stageData_.kNumBlockHorizontal;
-        }
-        KamataEngine::Vector3 GetPlayerRespawnPosition() const {
-            return stageData_.playerRespawnSnapshot;
-        }
-        std::vector<KamataEngine::Vector3> GetEnemyRespawnPositions() const {
-            return stageData_.enemyRespawnSnapshot;
-        }
+    MapChipType GetMapChipTypeByIndex(uint32_t x, uint32_t y) const;
+    KamataEngine::Vector3 GetMapChipPositionByIndex(uint32_t x, uint32_t y) const;
 
-        float GetMapChipWidth() const {
-            return mapChipWidth_;
-        }
-        float GetMapChipHeight() const {
-            return mapChipHeight_;
-        }
+    const std::vector<std::unique_ptr<MapObject>>& GetObjects() const;
 
-        
-    
-    private:
-        std::string Trim_(const std::string& s) {
-            size_t start = 0;
-            while (start < s.size() && std::isspace((unsigned char)s[start])) start++;
+    uint32_t GetNumBlockVertical() const;
+    uint32_t GetNumBlockHorizontal() const;
 
-            size_t end = s.size();
-            while (end > start && std::isspace((unsigned char)s[end - 1])) end--;
+    KamataEngine::Vector3 GetPlayerRespawnPosition() const;
+    const std::vector<KamataEngine::Vector3>& GetEnemyRespawnPositions() const;
 
-            return s.substr(start, end - start);
-        }
+    float GetMapChipWidth() const;
+    float GetMapChipHeight() const;
 
-        bool IsInteger_(const std::string& s) {
-            if (s.empty()) return false;
+private:
+    std::string Trim_(const std::string& value) const;
+    bool IsInteger_(const std::string& value) const;
 
-            size_t i = 0;
-            if (s[0] == '-' || s[0] == '+') i++;
+    std::vector<std::vector<MapChipType>> ReadMapChip_(
+        const std::string& filename) const;
 
-            if (i == s.size()) return false;
+private:
+    MapChipData stageData_{};
+    float mapChipWidth_ = 0.0f;
+    float mapChipHeight_ = 0.0f;
 
-            for (; i < s.size(); i++) {
-                if (!std::isdigit((unsigned char)s[i])) return false;
-            }
+    // objects_拥有物件生命周期。
+    std::vector<std::unique_ptr<MapObject>> objects_{};
 
-            return true;
-        }
-
-        std::vector<std::vector<MapChipType>> ReadMapChip_(const std::string& filename) {
-            std::vector<std::vector<MapChipType>> matrix;
-            std::ifstream file(filename);
-
-            if (!file.is_open()) {
-                throw std::runtime_error("Cannot open CSV file: " + filename);
-            }
-
-            std::string line;
-
-            if (std::getline(file, line)) {
-                if (line.size() >= 3 &&
-                    (unsigned char)line[0] == 0xEF &&
-                    (unsigned char)line[1] == 0xBB &&
-                    (unsigned char)line[2] == 0xBF) {
-                    line = line.substr(3);
-                }
-            } else {
-                return matrix; // is null
-            }
-
-            auto processLine = [&](const std::string& ln) {
-                std::vector<MapChipType> row;
-                std::stringstream ss(ln);
-                std::string cell;
-
-                while (std::getline(ss, cell, ',')) {
-                    cell = Trim_(cell);
-                    if (cell.empty()) continue;             // 
-                    if (IsInteger_(cell)) {
-                        row.push_back(static_cast<MapChipType>(std::stoi(cell)));
-                    }
-                }
-
-                if (!row.empty()) matrix.push_back(row);
-            };
-
-            processLine(line);
-
-            while (std::getline(file, line)) {
-                processLine(line);
-            }
-            
-            return matrix;
-        }
-
-    private:
-        MapChipData stageData_ = {};
-        float mapChipWidth_ = 0;
-        float mapChipHeight_ = 0;
-
-        std::vector<Box*> blocks_;
-
-    };
+    // objectGrid_只保存非拥有指针，用于附近查询。
+    // 当前示例假设一个CSV格子最多生成一个MapObject。
+    std::vector<std::vector<MapObject*>> objectGrid_{};
+};
 
 } // namespace Assets

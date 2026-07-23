@@ -165,9 +165,14 @@
   <ItemGroup>
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="CharacterCollisionController.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapChipField.cpp" />
+    <ClCompile Include="MapCollisionDispatcher.cpp" />
+    <ClCompile Include="MapObject.cpp" />
+    <ClCompile Include="MapObjectComponents.cpp" />
+    <ClCompile Include="MapObjectFactory.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="SkyDome.cpp" />
   </ItemGroup>
@@ -271,9 +276,17 @@
   <ItemGroup>
     <ClInclude Include="Box.hpp" />
     <ClInclude Include="CameraController.hpp" />
+    <ClInclude Include="CharacterCollisionController.hpp" />
     <ClInclude Include="GameConfig.hpp" />
     <ClInclude Include="GameScene.hpp" />
+    <ClInclude Include="IMapObjectComponent.hpp" />
     <ClInclude Include="MapChipField.hpp" />
+    <ClInclude Include="MapCollisionDispatcher.hpp" />
+    <ClInclude Include="MapCollisionTypes.hpp" />
+    <ClInclude Include="MapObject.hpp" />
+    <ClInclude Include="MapObjectComponents.hpp" />
+    <ClInclude Include="MapObjectEvents.hpp" />
+    <ClInclude Include="MapObjectFactory.hpp" />
     <ClInclude Include="Math.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="SkyDome.hpp" />

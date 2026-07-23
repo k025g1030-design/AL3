@@ -3,6 +3,8 @@
 #include "Math.hpp"
 #include <algorithm>
 
+#include "GameConfig.hpp"
+
 namespace Actor {
     class Player;
 }
@@ -12,8 +14,6 @@ namespace Assets {
 }
 
 namespace Game {
-
-
 
     struct Rect {
         float left;
@@ -96,7 +96,7 @@ namespace Game {
         // The target player that the camera should follow
         Actor::Player* target_ = nullptr;
         Assets::MapChipField* mapField_ = nullptr;
-        KamataEngine::Vector3 targetOffset_ = { 0, 0, -50.0f };
+        KamataEngine::Vector3 targetOffset_ = { 0, 0, Camera::Config::kCameraDistance };
 
         KamataEngine::Vector3 velocity_{};
     

@@ -1,42 +1,44 @@
 #pragma once
+
+#include <cassert>
+#include <cstdint>
+
 #include "KamataEngine.h"
 #include "Math.hpp"
 
 namespace Assets {
 
+// Box只负责一个地图物件的可视化。
+// Model和Texture由场景的ResourceManager持有，Box只保存非拥有引用。
+class Box {
+public:
+    void Initialize(
+        KamataEngine::Model* model,
+        uint32_t textureHandle,
+        const KamataEngine::Vector3& position);
 
-    class Box {
-    public:
-        void Initialize(KamataEngine::Model* model, uint32_t textureHandle, const KamataEngine::Vector3& position);
-        void Update();
-        void Draw(const KamataEngine::Camera* camera);
-        void Finalize();
+    void Update();
+    void Draw(const KamataEngine::Camera* camera);
 
-    public:
-        void SetPosition(const KamataEngine::Vector3& position) {
-            worldTransform_.translation_ = position;
-        }
+    // 只解除引用，不释放共享资源。
+    void Finalize();
 
-        void GetSize() {
-        }
+    void SetPosition(const KamataEngine::Vector3& position);
+    const KamataEngine::Vector3& GetPosition() const;
 
-    private:
-        void ApplyTransform_() {
-            worldTransform_.matWorld_ = MathUtils::MakeAffineMatrix(
-                worldTransform_.scale_,
-                worldTransform_.rotation_,
-                worldTransform_.translation_
-            );
-            worldTransform_.TransferMatrix();
-        }
+    void SetScale(const KamataEngine::Vector3& scale);
+    const KamataEngine::Vector3& GetScale() const;
 
+    void SetRotation(const KamataEngine::Vector3& rotation);
+    const KamataEngine::Vector3& GetRotation() const;
 
-    private:
-        KamataEngine::Model* model_ = nullptr;
-        KamataEngine::WorldTransform worldTransform_;
+private:
+    void ApplyTransform_();
 
-        uint32_t textureHandle_ = 0;
+private:
+    KamataEngine::Model* model_ = nullptr; // non-owning
+    KamataEngine::WorldTransform worldTransform_{};
+    uint32_t textureHandle_ = 0;           // non-owning handle
+};
 
-    };
-
-}
+} // namespace Assets

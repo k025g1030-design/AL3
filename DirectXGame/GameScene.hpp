@@ -1,71 +1,44 @@
 #pragma once
+
+#include <cstdint>
+#include <memory>
+
 #include "KamataEngine.h"
-#include <cstdint>	
-#include "SkyDome.hpp"
-#include "MapChipField.hpp"
 #include "CameraController.hpp"
-
+#include "CharacterCollisionController.hpp"
+#include "MapChipField.hpp"
 #include "Player.hpp"
+#include "SkyDome.hpp"
 
+namespace Game {
 
-namespace Game{
-	class GameScene {
-	public:
-        void Initialize();
-        void Update();
-        void Draw();
-        void Finalize();
+class GameScene {
+public:
+    void Initialize();
+    void Update();
+    void Draw();
+    void Finalize();
 
-    public:
-        const uint32_t modelsize = 512;
-        
+private:
+    void GenerateMapData_();
+    void GenerateMapObjects_();
+    void GeneratePlayer_();
 
-        void GenerateBlocks() {
-            // stageData_をもとにBoxを生成
-            for (uint32_t y = 0; y < currentMap_->GetNumBlockVertical(); y++) {
-                for (uint32_t x = 0; x < currentMap_->GetNumBlockHorizontal(); x++) {
-                    if (currentMap_->GetMapChipTypeByIndex(x, y) == Assets::MapChipType::kBlock) {
-                        Assets::Box* box = new Assets::Box();
-                        box->Initialize(
-                            KamataEngine::Model::Create(), 
-                            KamataEngine::TextureManager::Load("images/Wall.png"), 
-                            currentMap_->GetMapChipPositionByIndex(x, y)
-                        );
-                        currentMap_->AddBlock(box);
-                    }
-                }
-            }
-        }
+private:
+    CameraController cameraController_{};
+    Assets::CharacterCollisionController playerCollision_{};
 
-        void GeneratePlayer() {
-            player_ = new Actor::Player();
-            player_->Initialize(KamataEngine::Model::CreateFromOBJ("player"), currentMap_->GetPlayerRespawnPosition());
-        }
+    std::unique_ptr<SkyDome> skyDome_{};
+    std::unique_ptr<Actor::Player> player_{};
+    std::unique_ptr<Assets::MapChipField> currentMap_{};
 
-        void GenerateMapData() {
-            currentMap_ = new Assets::MapChipField();
-            currentMap_->LoadData();
-        }
+    // GameScene 擁有共享資源；Box / MapObject / Player 都不 delete 它們。
+    KamataEngine::Model* blockModel_ = nullptr;
+    KamataEngine::Model* playerModel_ = nullptr;
+    uint32_t blockTextureHandle_ = 0;
 
-	private:
-        uint32_t soundDataHandle_ = 0;
-        uint32_t voiceHandle_ = 0;
-        SkyDome* skyDome_ = nullptr;
+    uint32_t soundDataHandle_ = 0;
+    uint32_t voiceHandle_ = 0;
+};
 
-        
-
-        Game::CameraController cameraController_;
-
-
-
-        Actor::Player* player_ = nullptr;
-
-        Assets::MapChipField* currentMap_ = nullptr;
-       
-       
-
-
-        
-	};
-
-}
+} // namespace Game
