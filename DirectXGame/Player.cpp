@@ -2,6 +2,7 @@
 #include "MapChipField.hpp"
 #include <algorithm>
 #include <array>
+#include <cmath>
 
 namespace Actor {
     void Player::Initialize(KamataEngine::Model* model, const KamataEngine::Vector3& position) {
@@ -27,8 +28,7 @@ namespace Actor {
 
         CollisionMapInfo collisionMapInfo;
         collisionMapInfo.move = velocity_;
-        MapCollisionCheck_(collisionMapInfo);
-        MoveByCollisionMapInfo_(collisionMapInfo);
+        ResolveMapCollision_(collisionMapInfo);
         CeilingCollision_(collisionMapInfo);
         LandingCollision_(collisionMapInfo);
         WallCollision_(collisionMapInfo);
@@ -88,6 +88,72 @@ namespace Actor {
         MapCollisionCheckLeft_(info);
     }
 
+    void Player::ResolveMapCollision_(CollisionMapInfo& info) {
+        if (mapChipField_ == nullptr) {
+            MoveByCollisionMapInfo_(info);
+            return;
+        }
+
+        const KamataEngine::Vector3 requestedMove = info.move;
+        const float maximumStep =
+            (std::min)(Block::Config::kBlockWidth, Block::Config::kBlockHeight) /
+            4.0f;
+        const float maximumDistance =
+            (std::max)(std::abs(requestedMove.x), std::abs(requestedMove.y));
+        const uint32_t stepCount =
+            (std::max)(1u, static_cast<uint32_t>(
+                std::ceil(maximumDistance / maximumStep)));
+
+        const KamataEngine::Vector3 movePerStep = {
+            requestedMove.x / static_cast<float>(stepCount),
+            requestedMove.y / static_cast<float>(stepCount),
+            requestedMove.z / static_cast<float>(stepCount),
+        };
+
+        KamataEngine::Vector3 totalMove = {};
+        bool blockHorizontalMove = false;
+        bool blockVerticalMove = false;
+        info.ceiling = false;
+        info.landing = false;
+        info.hitWall = false;
+
+        for (uint32_t step = 0; step < stepCount; ++step) {
+            CollisionMapInfo stepInfo;
+            stepInfo.move = {
+                blockHorizontalMove ? 0.0f : movePerStep.x,
+                blockVerticalMove ? 0.0f : movePerStep.y,
+                movePerStep.z,
+            };
+            const KamataEngine::Vector3 requestedStepMove = stepInfo.move;
+
+            MapCollisionCheck_(stepInfo);
+            MoveByCollisionMapInfo_(stepInfo);
+            totalMove = MathUtils::V3Plus(totalMove, stepInfo.move);
+
+            info.ceiling = info.ceiling || stepInfo.ceiling;
+            info.landing = info.landing || stepInfo.landing;
+            info.hitWall = info.hitWall || stepInfo.hitWall;
+
+            if (stepInfo.hitWall ||
+                stepInfo.move.x != requestedStepMove.x) {
+                blockHorizontalMove = true;
+            }
+            if (stepInfo.ceiling || stepInfo.landing ||
+                stepInfo.move.y != requestedStepMove.y) {
+                blockVerticalMove = true;
+            }
+        }
+
+        info.move = totalMove;
+    }
+
+    bool Player::IsBlock_(const Assets::IndexSet& indexSet) const {
+        return mapChipField_ != nullptr &&
+            mapChipField_->GetMapChipTypeByIndex(
+                indexSet.xIndex, indexSet.yIndex) ==
+            Assets::MapChipType::kBlock;
+    }
+
     void Player::MapCollisionCheckUp_(CollisionMapInfo& info) {
         if (info.move.y <= 0.0f || mapChipField_ == nullptr) {
             return;
@@ -107,13 +173,18 @@ namespace Actor {
         const Corner topCorners[] = { kLeftTop, kRightTop };
 
         for (Corner corner : topCorners) {
+            const Assets::IndexSet indexSetBefore =
+                mapChipField_->GetMapChipIndexSetByPosition(
+                    CornerPosition_(worldTransform_.translation_, corner));
             const Assets::IndexSet indexSet =
                 mapChipField_->GetMapChipIndexSetByPosition(positionsNew[corner]);
-            const Assets::MapChipType mapChipType =
-                mapChipField_->GetMapChipTypeByIndex(
-                    indexSet.xIndex, indexSet.yIndex);
+            const Assets::IndexSet indexSetBelow = {
+                indexSet.xIndex, indexSet.yIndex + 1u };
 
-            if (mapChipType == Assets::MapChipType::kBlock) {
+            const bool crossedCellBoundary =
+                indexSetBefore.yIndex != indexSet.yIndex;
+            if (crossedCellBoundary && IsBlock_(indexSet) &&
+                !IsBlock_(indexSetBelow)) {
                 const Assets::Rect rect =
                     mapChipField_->GetRectByIndex(
                         indexSet.xIndex, indexSet.yIndex);
@@ -144,11 +215,19 @@ namespace Actor {
         bool hit = false;
 
         for (Corner corner : bottomCorners) {
+            const Assets::IndexSet indexSetBefore =
+                mapChipField_->GetMapChipIndexSetByPosition(
+                    CornerPosition_(worldTransform_.translation_, corner));
             const Assets::IndexSet indexSet =
                 mapChipField_->GetMapChipIndexSetByPosition(
                     CornerPosition_(centerNew, corner));
-            if (mapChipField_->GetMapChipTypeByIndex(
-                indexSet.xIndex, indexSet.yIndex) == Assets::MapChipType::kBlock) {
+            const Assets::IndexSet indexSetAbove = {
+                indexSet.xIndex, indexSet.yIndex - 1u };
+
+            const bool crossedCellBoundary =
+                indexSetBefore.yIndex != indexSet.yIndex;
+            if (crossedCellBoundary && IsBlock_(indexSet) &&
+                !IsBlock_(indexSetAbove)) {
                 const Assets::Rect rect =
                     mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
                 const float moveY =
@@ -178,11 +257,19 @@ namespace Actor {
         bool hit = false;
 
         for (Corner corner : rightCorners) {
+            const Assets::IndexSet indexSetBefore =
+                mapChipField_->GetMapChipIndexSetByPosition(
+                    CornerPosition_(worldTransform_.translation_, corner));
             const Assets::IndexSet indexSet =
                 mapChipField_->GetMapChipIndexSetByPosition(
                     CornerPosition_(centerNew, corner));
-            if (mapChipField_->GetMapChipTypeByIndex(
-                indexSet.xIndex, indexSet.yIndex) == Assets::MapChipType::kBlock) {
+            const Assets::IndexSet indexSetLeft = {
+                indexSet.xIndex - 1u, indexSet.yIndex };
+
+            const bool crossedCellBoundary =
+                indexSetBefore.xIndex != indexSet.xIndex;
+            if (crossedCellBoundary && IsBlock_(indexSet) &&
+                !IsBlock_(indexSetLeft)) {
                 const Assets::Rect rect =
                     mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
                 const float moveX =
@@ -212,11 +299,19 @@ namespace Actor {
         bool hit = false;
 
         for (Corner corner : leftCorners) {
+            const Assets::IndexSet indexSetBefore =
+                mapChipField_->GetMapChipIndexSetByPosition(
+                    CornerPosition_(worldTransform_.translation_, corner));
             const Assets::IndexSet indexSet =
                 mapChipField_->GetMapChipIndexSetByPosition(
                     CornerPosition_(centerNew, corner));
-            if (mapChipField_->GetMapChipTypeByIndex(
-                indexSet.xIndex, indexSet.yIndex) == Assets::MapChipType::kBlock) {
+            const Assets::IndexSet indexSetRight = {
+                indexSet.xIndex + 1u, indexSet.yIndex };
+
+            const bool crossedCellBoundary =
+                indexSetBefore.xIndex != indexSet.xIndex;
+            if (crossedCellBoundary && IsBlock_(indexSet) &&
+                !IsBlock_(indexSetRight)) {
                 const Assets::Rect rect =
                     mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
                 const float moveX =
@@ -260,6 +355,7 @@ namespace Actor {
 
     void Player::LandingCollision_(const CollisionMapInfo& info) {
         if (info.landing) {
+            velocity_.x *= (1.0f - kAttenuationLanding);
             velocity_.y = 0.0f;
             onGround_ = true;
         } else if (velocity_.y < 0.0f) {
@@ -269,6 +365,7 @@ namespace Actor {
 
     void Player::WallCollision_(const CollisionMapInfo& info) {
         if (info.hitWall) {
+            velocity_.x *= (1.0f - kAttenuationWall);
             velocity_.x = 0.0f;
         }
     }

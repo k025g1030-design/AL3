@@ -6,6 +6,7 @@
 
 namespace Assets {
     class MapChipField;
+    struct IndexSet;
 }
 
 namespace Actor {
@@ -69,6 +70,8 @@ namespace Actor {
         void MapCollisionCheckDown_(CollisionMapInfo& info);
         void MapCollisionCheckLeft_(CollisionMapInfo& info);
         void MapCollisionCheckRight_(CollisionMapInfo& info);
+        void ResolveMapCollision_(CollisionMapInfo& info);
+        bool IsBlock_(const Assets::IndexSet& indexSet) const;
         KamataEngine::Vector3 CornerPosition_(
             const KamataEngine::Vector3& center, Corner corner) const;
         void MoveByCollisionMapInfo_(const CollisionMapInfo& info);
@@ -151,5 +154,7 @@ namespace Actor {
         static inline const float kWidth = 0.8f;
         static inline const float kHeight = 0.8f;
         static inline const float kBlank = 0.01f;
+        static inline const float kAttenuationLanding = 0.2f;
+        static inline const float kAttenuationWall = 0.2f;
     };
 }
