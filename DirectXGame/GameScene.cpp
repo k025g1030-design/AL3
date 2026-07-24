@@ -27,6 +27,10 @@ namespace Game {
     }
 
     void GameScene::Update() {
+        KamataEngine::Input* input = KamataEngine::Input::GetInstance();
+        if (!player_->IsDead() && input->TriggerKey(DIK_P)) {
+            cameraController_.SetMode(CameraController::Mode::kForcedScroll);
+        }
 
         cameraController_.Update();
         
@@ -35,6 +39,12 @@ namespace Game {
             box->Update();
         }
         player_->Update();
+        const Rect viewRect = cameraController_.GetViewRect();
+        player_->ConstrainToCamera(
+            viewRect.left, viewRect.right, viewRect.bottom, viewRect.top);
+        if (player_->IsDead()) {
+            cameraController_.StopForcedScroll();
+        }
         skyDome_->Update();
                                                                         
     }

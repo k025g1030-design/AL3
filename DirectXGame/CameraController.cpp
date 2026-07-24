@@ -21,27 +21,29 @@ namespace Game {
         }
 
 
-        // 玩家目前的世界座標
-        KamataEngine::Vector3 targetPosition =
-            target_->GetWorldTransform().translation_;
+        if (mode_ == Mode::kFollow) {
+            KamataEngine::Vector3 targetPosition =
+                target_->GetWorldTransform().translation_;
+            const KamataEngine::Vector3 targetVelocity =
+                target_->GetVelocity();
 
-        // 玩家目前的速度
-        const KamataEngine::Vector3 velocity =
-            target_->GetVelocity();
+            targetPosition.x += targetVelocity.x * Camera::Config::kVelocityBias;
+            targetPosition.y += targetVelocity.y * Camera::Config::kVelocityBias;
+            targetPosition.z = camera_.translation_.z;
 
-        // 將速度乘上調整倍率後，加到目標位置
-        targetPosition.x += velocity.x * Camera::Config::kVelocityBias;
-        targetPosition.y += velocity.y * Camera::Config::kVelocityBias;
-
-        // Camera 的 Z 不跟著玩家改變
-        targetPosition.z = camera_.translation_.z;
-
-        // 從目前 Camera 座標向目標座標平滑補間
-        camera_.translation_ = MathUtils::Lerp(
-            camera_.translation_,
-            targetPosition,
-            Camera::Config::kInterpolationRate
-        );
+            camera_.translation_ = MathUtils::Lerp(
+                camera_.translation_,
+                targetPosition,
+                Camera::Config::kInterpolationRate
+            );
+            velocity_ = {};
+        } else {
+            velocity_ = forcedScrollStopped_
+                ? KamataEngine::Vector3{}
+                : KamataEngine::Vector3{ Camera::Config::kForcedScrollSpeed, 0.0f, 0.0f };
+            camera_.translation_ =
+                MathUtils::V3Plus(camera_.translation_, velocity_);
+        }
 
         ConstrainSideScrollCamera();
 
@@ -125,19 +127,43 @@ namespace Game {
         // 3. 限制 Camera 的 X/Y 中心位置
         // --------------------------------------------
 
-        camera_.translation_.x = ClampAxis(
-            target_->GetWorldTransform().translation_.x,
+        const float requestedX = mode_ == Mode::kFollow
+            ? target_->GetWorldTransform().translation_.x
+            : camera_.translation_.x;
+        const float constrainedX = ClampAxis(
+            requestedX,
             0,
             mapWidth,
             visibleHalfWidth
         );
+        if (mode_ == Mode::kForcedScroll &&
+            constrainedX < requestedX) {
+            forcedScrollStopped_ = true;
+            velocity_ = {};
+        }
+        camera_.translation_.x = constrainedX;
 
+        const float requestedY = mode_ == Mode::kFollow
+            ? target_->GetWorldTransform().translation_.y
+            : camera_.translation_.y;
         camera_.translation_.y = ClampAxis(
-            target_->GetWorldTransform().translation_.y,
+            requestedY,
             0,
             mapHeight,
             visibleHalfHeight
         );
+    }
+
+    Rect CameraController::GetViewRect() const {
+        const float distance = std::abs(camera_.translation_.z);
+        const float halfHeight = distance * std::tan(camera_.fovAngleY * 0.5f);
+        const float halfWidth = halfHeight * camera_.aspectRatio;
+        return {
+            camera_.translation_.x - halfWidth,
+            camera_.translation_.y + halfHeight,
+            camera_.translation_.x + halfWidth,
+            camera_.translation_.y - halfHeight,
+        };
     }
 
     void CameraController::Reset() {

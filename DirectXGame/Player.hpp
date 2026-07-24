@@ -21,6 +21,10 @@ namespace Actor {
         void Update();
         void Draw(const KamataEngine::Camera* camera);
         void Finalize();
+        void ConstrainToCamera(float left, float right, float bottom, float top);
+        bool IsDead() const {
+            return isDead_;
+        }
         void SetMapChipField(Assets::MapChipField* mapChipField) {
             mapChipField_ = mapChipField;
         }
@@ -62,10 +66,18 @@ namespace Actor {
         void MoveInput_();
         void MapCollisionCheck_(CollisionMapInfo& info);
         void MapCollisionCheckUp_(CollisionMapInfo& info);
+        void MapCollisionCheckDown_(CollisionMapInfo& info);
+        void MapCollisionCheckLeft_(CollisionMapInfo& info);
+        void MapCollisionCheckRight_(CollisionMapInfo& info);
         KamataEngine::Vector3 CornerPosition_(
             const KamataEngine::Vector3& center, Corner corner) const;
         void MoveByCollisionMapInfo_(const CollisionMapInfo& info);
         void CeilingCollision_(const CollisionMapInfo& info);
+        void LandingCollision_(const CollisionMapInfo& info);
+        void WallCollision_(const CollisionMapInfo& info);
+        bool IsOverlappingBlock_() const;
+        void StartDeath_();
+        void UpdateDeath_();
 
         bool IsTurning_() const {
             return turnTimer_ > 0.0f;
@@ -134,10 +146,10 @@ namespace Actor {
         float turnFirstRotationY_ = 0.0f;
         float turnTimer_ = 0.0f;
         bool onGround_ = true;
+        bool isDead_ = false;
 
         static inline const float kWidth = 0.8f;
         static inline const float kHeight = 0.8f;
         static inline const float kBlank = 0.01f;
     };
 }
-

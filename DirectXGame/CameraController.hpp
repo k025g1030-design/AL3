@@ -26,10 +26,16 @@ namespace Game {
 
     class CameraController {
     public:
+        enum class Mode {
+            kFollow,
+            kForcedScroll,
+        };
+
         void Initialize();
         void Update();
         void Reset();
         void ConstrainSideScrollCamera();
+        Rect GetViewRect() const;
 
 
     public:
@@ -54,9 +60,16 @@ namespace Game {
         KamataEngine::Vector3 GetVelocity() const {
             return velocity_;
         }
-        
-
-        
+        void SetMode(Mode mode) {
+            mode_ = mode;
+        }
+        Mode GetMode() const {
+            return mode_;
+        }
+        void StopForcedScroll() {
+            velocity_ = {};
+            forcedScrollStopped_ = true;
+        }
 
     private:
         void SetDebugCameraActive_(bool active) {
@@ -99,10 +112,10 @@ namespace Game {
         KamataEngine::Vector3 targetOffset_ = { 0, 0, -50.0f };
 
         KamataEngine::Vector3 velocity_{};
-    
+        Mode mode_ = Mode::kFollow;
+        bool forcedScrollStopped_ = false;
 
 
         bool debugCameraActive_ = false;
     };
 }
-
