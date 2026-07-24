@@ -1,70 +1,117 @@
 #pragma once
-
-#include <numbers>
-
-#include "GameConfig.hpp"
 #include "KamataEngine.h"
-#include "MapObjectEvents.hpp"
 #include "Math.hpp"
+#include <numbers>
+#include "GameConfig.hpp"
 
 namespace Actor {
 
-enum class LRDirection {
-    kRight = 0,
-    kLeft = 1,
-};
+    enum class LRDirection {
+        kRight = 0,
+        kLeft = 1,
+    };
 
-class Player final : public Assets::IMapActor {
-public:
-    void Initialize(
-        KamataEngine::Model* model,
-        const KamataEngine::Vector3& position);
+    class Player {
+    public:
+        void Initialize(KamataEngine::Model* model, const KamataEngine::Vector3& position);
+        void Update();
+        void Draw(const KamataEngine::Camera* camera);
+        void Finalize();
 
-    // 只計算輸入、速度與朝向，不在這裡修改位置。
-    void Update();
+    public:
+        KamataEngine::WorldTransform& GetWorldTransform() {
+            return worldTransform_;
+        }
 
-    // 碰撞控制器完成整幀的位置修正後，只同步一次描畫矩陣。
-    void SyncTransform();
+        KamataEngine::Vector3 GetVelocity() const {
+            return velocity_;
+        }   
 
-    void Draw(const KamataEngine::Camera* camera);
-    void Finalize();
+        void SetPosition(const KamataEngine::Vector3& position) {
+            worldTransform_.translation_ = position;
+        }
+        void SetVelocity(const KamataEngine::Vector3& velocity) {
+            velocity_ = velocity;
+        }
+        void AddVelocity(const KamataEngine::Vector3 velocity) {
+            velocity_ = MathUtils::V3Plus(velocity_, velocity);
+        }
+        void Move() {
+            worldTransform_.translation_ = MathUtils::V3Plus(worldTransform_.translation_, velocity_);
+        }
+        
 
-    // IMapActor
-    void ApplyDamage(int damage) override;
-    KamataEngine::Vector3 GetPosition() const override;
-    void SetPosition(const KamataEngine::Vector3& position) override;
-    KamataEngine::Vector3 GetVelocity() const override;
-    void SetVelocity(const KamataEngine::Vector3& velocity) override;
-    void SetGrounded(bool grounded) override;
+    private:
+        bool IsTurning_() const {
+            return turnTimer_ > 0.0f;
+        }
+        void StartTurn_() {
+            turnFirstRotationY_ = worldTransform_.rotation_.y;
+            turnTimer_ = World::Config::kTimeTurn;
+        }
 
-    KamataEngine::WorldTransform& GetWorldTransform();
-    const KamataEngine::WorldTransform& GetWorldTransform() const;
+        void UpdateTurn_() {
+            if (turnTimer_ > 0.0f) {
+                turnTimer_ -= 1 / 60.0f; // Assuming 60 FPS, adjust as needed
+                if (turnTimer_ < 0.0f) {
+                    turnTimer_ = 0.0f;
+                }
+                float destinationRotationYTable[] = {
+                    std::numbers::pi_v<float> / 2.0f, // 右
+                    std::numbers::pi_v<float> *3.0f / 2.0f, // 左
+                };
 
-    bool IsGrounded() const;
-    int GetHealth() const;
+                float destinationRotationY = destinationRotationYTable[static_cast<int>(lrDirection_)];
+                worldTransform_.rotation_.y = turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * EaseInOutBounce_(1.0f - turnTimer_ / World::Config::kTimeTurn);
+            }
 
-private:
-    void StartTurn_();
-    void UpdateTurn_();
-    float EaseOutBounce_(float t) const;
-    float EaseInOutBounce_(float t) const;
-    void ApplyTransform_();
+        }
 
-private:
-    // GameScene / ResourceManager 擁有 Model。
-    KamataEngine::Model* model_ = nullptr;
-    KamataEngine::WorldTransform worldTransform_{};
+        float EaseOutBounce_(float t) {
+            if (t < 1 / 2.75f) {
+                return 7.5625f * t * t;
+            } else if (t < 2 / 2.75f) {
+                t -= 1.5f / 2.75f;
+                return 7.5625f * t * t + 0.75f;
+            } else if (t < 2.5f / 2.75f) {
+                t -= 2.25f / 2.75f;
+                return 7.5625f * t * t + 0.9375f;
+            } else {
+                t -= 2.625f / 2.75f;
+                return 7.5625f * t * t + 0.984375f;
+            }
+        }
 
-    KamataEngine::Vector3 velocity_{0.0f, 0.0f, 0.0f};
-    LRDirection lrDirection_ = LRDirection::kRight;
+        float EaseInOutBounce_(float t) {
+            return t < 0.5f
+                ? (1 - EaseOutBounce_(1 - 2 * t)) / 2
+                : (1 + EaseOutBounce_(2 * t - 1)) / 2;
+        }
+          
 
-    float turnFirstRotationY_ = 0.0f;
-    float turnTimer_ = 0.0f;
+        void ApplyTransform_() {
+            worldTransform_.matWorld_ = MathUtils::MakeAffineMatrix(
+                worldTransform_.scale_,
+                worldTransform_.rotation_,
+                worldTransform_.translation_
+            );
+            worldTransform_.TransferMatrix();
+        }
 
-    bool onGround_ = false;
+    private:
+        KamataEngine::Model* model_ = nullptr;
+        KamataEngine::WorldTransform worldTransform_;
 
-    static constexpr int kMaxHealth_ = 100;
-    int health_ = kMaxHealth_;
-};
+        KamataEngine::Vector3 velocity_ = { 0.0f, 0.0f, 0.0f };
+        LRDirection lrDirection_ = LRDirection::kRight;
 
-} // namespace Actor
+        float turnFirstRotationY_ = 0.0f;
+        float turnTimer_ = 0.0f;
+        bool onGround_ = true;
+
+
+
+    };
+}
+
+
