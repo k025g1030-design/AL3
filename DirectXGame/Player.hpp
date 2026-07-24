@@ -4,6 +4,10 @@
 #include <numbers>
 #include "GameConfig.hpp"
 
+namespace Assets {
+    class MapChipField;
+}
+
 namespace Actor {
 
     enum class LRDirection {
@@ -17,6 +21,9 @@ namespace Actor {
         void Update();
         void Draw(const KamataEngine::Camera* camera);
         void Finalize();
+        void SetMapChipField(Assets::MapChipField* mapChipField) {
+            mapChipField_ = mapChipField;
+        }
 
     public:
         KamataEngine::WorldTransform& GetWorldTransform() {
@@ -36,12 +43,30 @@ namespace Actor {
         void AddVelocity(const KamataEngine::Vector3 velocity) {
             velocity_ = MathUtils::V3Plus(velocity_, velocity);
         }
-        void Move() {
-            worldTransform_.translation_ = MathUtils::V3Plus(worldTransform_.translation_, velocity_);
-        }
-        
-
     private:
+        struct CollisionMapInfo {
+            bool ceiling = false;
+            bool landing = false;
+            bool hitWall = false;
+            KamataEngine::Vector3 move = { 0.0f, 0.0f, 0.0f };
+        };
+
+        enum Corner {
+            kRightBottom,
+            kLeftBottom,
+            kRightTop,
+            kLeftTop,
+            kNumCorner,
+        };
+
+        void MoveInput_();
+        void MapCollisionCheck_(CollisionMapInfo& info);
+        void MapCollisionCheckUp_(CollisionMapInfo& info);
+        KamataEngine::Vector3 CornerPosition_(
+            const KamataEngine::Vector3& center, Corner corner) const;
+        void MoveByCollisionMapInfo_(const CollisionMapInfo& info);
+        void CeilingCollision_(const CollisionMapInfo& info);
+
         bool IsTurning_() const {
             return turnTimer_ > 0.0f;
         }
@@ -104,14 +129,15 @@ namespace Actor {
 
         KamataEngine::Vector3 velocity_ = { 0.0f, 0.0f, 0.0f };
         LRDirection lrDirection_ = LRDirection::kRight;
+        Assets::MapChipField* mapChipField_ = nullptr;
 
         float turnFirstRotationY_ = 0.0f;
         float turnTimer_ = 0.0f;
         bool onGround_ = true;
 
-
-
+        static inline const float kWidth = 0.8f;
+        static inline const float kHeight = 0.8f;
+        static inline const float kBlank = 0.01f;
     };
 }
-
 

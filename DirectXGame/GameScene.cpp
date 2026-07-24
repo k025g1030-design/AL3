@@ -16,7 +16,7 @@ namespace Game {
         // player initialization should be after boxes initialization to ensure the player is drawn on top of the boxes
 
         GeneratePlayer();
-        
+        player_->SetMapChipField(currentMap_);
 
         cameraController_.SetTarget(player_);
         cameraController_.SetMapField(currentMap_);

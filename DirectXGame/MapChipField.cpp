@@ -1,4 +1,6 @@
 #include "MapChipField.hpp"
+#include <cmath>
+#include <limits>
 
 namespace Assets {
     void MapChipField::ResetData() {
@@ -28,5 +30,39 @@ namespace Assets {
         mapChipWidth_ = stageData_.kNumBlockHorizontal * Block::Config::kBlockWidth;
         mapChipHeight_ = stageData_.kNumBlockVertical * Block::Config::kBlockHeight;
 
+    }
+
+    IndexSet MapChipField::GetMapChipIndexSetByPosition(const KamataEngine::Vector3& position) const {
+        const int xIndex = static_cast<int>(std::floor(
+            (position.x + Block::Config::kBlockWidth / 2.0f) /
+            Block::Config::kBlockWidth));
+        const int yIndexFromBottom = static_cast<int>(std::floor(
+            (position.y + Block::Config::kBlockHeight / 2.0f) /
+            Block::Config::kBlockHeight));
+        const int yIndex =
+            static_cast<int>(GetNumBlockVertical()) - 1 - yIndexFromBottom;
+
+        const uint32_t invalidIndex = (std::numeric_limits<uint32_t>::max)();
+        IndexSet indexSet = { invalidIndex, invalidIndex };
+
+        if (xIndex >= 0 && xIndex < static_cast<int>(GetNumBlockHorizontal())) {
+            indexSet.xIndex = static_cast<uint32_t>(xIndex);
+        }
+        if (yIndex >= 0 && yIndex < static_cast<int>(GetNumBlockVertical())) {
+            indexSet.yIndex = static_cast<uint32_t>(yIndex);
+        }
+
+        return indexSet;
+    }
+
+    Rect MapChipField::GetRectByIndex(uint32_t xIndex, uint32_t yIndex) const {
+        const KamataEngine::Vector3 center = GetMapChipPositionByIndex(xIndex, yIndex);
+
+        Rect rect;
+        rect.left = center.x - Block::Config::kBlockWidth / 2.0f;
+        rect.right = center.x + Block::Config::kBlockWidth / 2.0f;
+        rect.bottom = center.y - Block::Config::kBlockHeight / 2.0f;
+        rect.top = center.y + Block::Config::kBlockHeight / 2.0f;
+        return rect;
     }
 }

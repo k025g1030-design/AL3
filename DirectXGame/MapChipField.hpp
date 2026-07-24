@@ -27,11 +27,25 @@ namespace Assets {
         std::vector<KamataEngine::Vector3> enemyRespawnSnapshot = {};
     };
 
+    struct IndexSet {
+        uint32_t xIndex;
+        uint32_t yIndex;
+    };
+
+    struct Rect {
+        float left;
+        float right;
+        float bottom;
+        float top;
+    };
+
     class MapChipField {
 
     public:
         void ResetData();
         void LoadData();
+        IndexSet GetMapChipIndexSetByPosition(const KamataEngine::Vector3& position) const;
+        Rect GetRectByIndex(uint32_t xIndex, uint32_t yIndex) const;
 
         void Finalize() {
             for (auto block : blocks_) {
