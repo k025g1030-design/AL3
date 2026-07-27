@@ -34,8 +34,10 @@ namespace Actor {
 
     void Player::OnCollision(const Enemy* enemy) {
         (void)enemy;
-        velocity_.y = World::Config::kJumpAcceleration;
-        onGround_ = false;
+        if (isDead_) {
+            return;
+        }
+        StartDeath_();
     }
 
     void Player::Initialize(KamataEngine::Model* model, const KamataEngine::Vector3& position) {

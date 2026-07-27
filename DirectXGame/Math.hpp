@@ -106,6 +106,19 @@ namespace MathUtils {
         return { a.x - b.x, a.y - b.y, a.z - b.z };
     }
 
+    static KamataEngine::Vector3 Transform(
+        const KamataEngine::Vector3& vector,
+        const KamataEngine::Matrix4x4& matrix) {
+        return {
+            vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] +
+                vector.z * matrix.m[2][0],
+            vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] +
+                vector.z * matrix.m[2][1],
+            vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] +
+                vector.z * matrix.m[2][2],
+        };
+    }
+
 
     static KamataEngine::Vector3 Lerp(const KamataEngine::Vector3& a, const KamataEngine::Vector3& b, float t) {
         return {

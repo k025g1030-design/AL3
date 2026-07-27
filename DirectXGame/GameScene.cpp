@@ -18,6 +18,9 @@ namespace Game {
         GeneratePlayer();
         player_->SetMapChipField(currentMap_);
         GenerateEnemies();
+        // 専用モデルを用意するまではプレイヤーモデルで代用する。
+        deathParticleModel_ =
+            KamataEngine::Model::CreateFromOBJ("player");
 
         cameraController_.SetTarget(player_);
         cameraController_.SetMapField(currentMap_);
@@ -47,6 +50,23 @@ namespace Game {
         const Rect viewRect = cameraController_.GetViewRect();
         player_->ConstrainToCamera(
             viewRect.left, viewRect.right, viewRect.bottom, viewRect.top);
+
+        const bool isPlayerDead = player_->IsDead();
+        if (isPlayerDead && !wasPlayerDead_) {
+            deathParticles_ = new DeathParticles();
+            deathParticles_->Initialize(
+                deathParticleModel_, cameraController_.GetCamera(),
+                player_->GetWorldPosition());
+        }
+        wasPlayerDead_ = isPlayerDead;
+        if (deathParticles_ != nullptr) {
+            deathParticles_->Update();
+            if (deathParticles_->IsFinished()) {
+                delete deathParticles_;
+                deathParticles_ = nullptr;
+            }
+        }
+
         if (player_->IsDead()) {
             cameraController_.StopForcedScroll();
         }
@@ -75,6 +95,9 @@ namespace Game {
         for (Actor::Enemy* enemy : enemies_) {
             enemy->Draw(cameraController_.GetCamera());
         }
+        if (deathParticles_ != nullptr) {
+            deathParticles_->Draw();
+        }
         skyDome_->Draw(cameraController_.GetCamera());
 
         KamataEngine::Model::PostDraw();
@@ -82,6 +105,11 @@ namespace Game {
        
     }
     void GameScene::Finalize() {
+        delete deathParticles_;
+        deathParticles_ = nullptr;
+        delete deathParticleModel_;
+        deathParticleModel_ = nullptr;
+
         for (Actor::Enemy* enemy : enemies_) {
             enemy->Finalize();
             delete enemy;

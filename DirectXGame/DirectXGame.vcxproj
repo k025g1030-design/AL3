@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="DeathParticles.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="main.cpp" />
@@ -273,6 +274,7 @@
     <ClInclude Include="Box.hpp" />
     <ClInclude Include="CameraController.hpp" />
     <ClInclude Include="Collision.hpp" />
+    <ClInclude Include="DeathParticles.hpp" />
     <ClInclude Include="Enemy.hpp" />
     <ClInclude Include="GameConfig.hpp" />
     <ClInclude Include="GameScene.hpp" />

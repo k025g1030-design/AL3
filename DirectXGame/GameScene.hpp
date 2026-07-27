@@ -4,6 +4,7 @@
 #include "SkyDome.hpp"
 #include "MapChipField.hpp"
 #include "CameraController.hpp"
+#include "DeathParticles.hpp"
 
 #include "Player.hpp"
 #include "Enemy.hpp"
@@ -76,7 +77,9 @@ namespace Game{
         std::vector<Actor::Enemy*> enemies_;
 
         Assets::MapChipField* currentMap_ = nullptr;
-       
+        KamataEngine::Model* deathParticleModel_ = nullptr;
+        DeathParticles* deathParticles_ = nullptr;
+        bool wasPlayerDead_ = false;
        
 
 
