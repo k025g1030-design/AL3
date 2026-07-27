@@ -1,12 +1,43 @@
 #include "Enemy.hpp"
 
 #include "Math.hpp"
+#include "Player.hpp"
 
 #include <cassert>
 #include <cmath>
 #include <numbers>
 
 namespace Actor {
+
+KamataEngine::Vector3 Enemy::GetWorldPosition() const {
+    return {
+        worldTransform_.matWorld_.m[3][0],
+        worldTransform_.matWorld_.m[3][1],
+        worldTransform_.matWorld_.m[3][2],
+    };
+}
+
+Collision::AABB Enemy::GetAABB() const {
+    const KamataEngine::Vector3 worldPosition = GetWorldPosition();
+    const KamataEngine::Vector3 halfSize = {
+        kWidth / 2.0f, kHeight / 2.0f, kDepth / 2.0f};
+    return {
+        {
+            worldPosition.x - halfSize.x,
+            worldPosition.y - halfSize.y,
+            worldPosition.z - halfSize.z,
+        },
+        {
+            worldPosition.x + halfSize.x,
+            worldPosition.y + halfSize.y,
+            worldPosition.z + halfSize.z,
+        },
+    };
+}
+
+void Enemy::OnCollision(const Player* player) {
+    (void)player;
+}
 
 void Enemy::Initialize(
     KamataEngine::Model* model,

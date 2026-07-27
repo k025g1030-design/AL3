@@ -43,6 +43,7 @@ namespace Game {
         for (Actor::Enemy* enemy : enemies_) {
             enemy->Update();
         }
+        CheckAllCollisions();
         const Rect viewRect = cameraController_.GetViewRect();
         player_->ConstrainToCamera(
             viewRect.left, viewRect.right, viewRect.bottom, viewRect.top);
@@ -51,6 +52,16 @@ namespace Game {
         }
         skyDome_->Update();
                                                                         
+    }
+
+    void GameScene::CheckAllCollisions() {
+        const Collision::AABB playerAABB = player_->GetAABB();
+        for (Actor::Enemy* enemy : enemies_) {
+            if (Collision::IsCollision(playerAABB, enemy->GetAABB())) {
+                player_->OnCollision(enemy);
+                enemy->OnCollision(player_);
+            }
+        }
     }
 
     void GameScene::Draw() {

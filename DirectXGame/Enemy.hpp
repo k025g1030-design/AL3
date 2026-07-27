@@ -1,8 +1,11 @@
 #pragma once
 
 #include "KamataEngine.h"
+#include "Collision.hpp"
 
 namespace Actor {
+
+class Player;
 
 /// <summary>
 /// 敵
@@ -15,6 +18,9 @@ public:
     void Update();
     void Draw(const KamataEngine::Camera* camera);
     void Finalize();
+    KamataEngine::Vector3 GetWorldPosition() const;
+    Collision::AABB GetAABB() const;
+    void OnCollision(const Player* player);
 
 private:
     void ApplyTransform_();
@@ -30,6 +36,9 @@ private:
     static inline constexpr float kWalkMotionAngleStart = -10.0f;
     static inline constexpr float kWalkMotionAngleEnd = 10.0f;
     static inline constexpr float kWalkMotionTime = 1.0f;
+    static inline constexpr float kWidth = 0.8f;
+    static inline constexpr float kHeight = 0.8f;
+    static inline constexpr float kDepth = 0.8f;
 };
 
 } // namespace Actor

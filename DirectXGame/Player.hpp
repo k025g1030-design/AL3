@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Math.hpp"
+#include "Collision.hpp"
 #include <numbers>
 #include "GameConfig.hpp"
 
@@ -10,6 +11,8 @@ namespace Assets {
 }
 
 namespace Actor {
+
+    class Enemy;
 
     enum class LRDirection {
         kRight = 0,
@@ -23,6 +26,9 @@ namespace Actor {
         void Draw(const KamataEngine::Camera* camera);
         void Finalize();
         void ConstrainToCamera(float left, float right, float bottom, float top);
+        KamataEngine::Vector3 GetWorldPosition() const;
+        Collision::AABB GetAABB() const;
+        void OnCollision(const Enemy* enemy);
         bool IsDead() const {
             return isDead_;
         }
@@ -153,6 +159,7 @@ namespace Actor {
 
         static inline const float kWidth = 0.8f;
         static inline const float kHeight = 0.8f;
+        static inline const float kDepth = 0.8f;
         static inline const float kBlank = 0.01f;
         static inline const float kAttenuationLanding = 0.2f;
         static inline const float kAttenuationWall = 0.2f;

@@ -17,6 +17,7 @@ namespace Game{
         void Update();
         void Draw();
         void Finalize();
+        void CheckAllCollisions();
 
     public:
         const uint32_t modelsize = 512;
@@ -45,8 +46,6 @@ namespace Game{
         }
 
         void GenerateEnemies() {
-            // TODO: Enemyモデルを用意したら、"player" をEnemyのOBJフォルダー名に置き換える。
-            // 現在は課題の指定どおりPlayerモデルをEnemyにも流用する。
             enemyModel_ = KamataEngine::Model::CreateFromOBJ("enemy");
             for (const KamataEngine::Vector3& position :
                  currentMap_->GetEnemyRespawnPositions()) {

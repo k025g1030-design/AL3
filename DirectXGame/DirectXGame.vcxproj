@@ -272,6 +272,7 @@
   <ItemGroup>
     <ClInclude Include="Box.hpp" />
     <ClInclude Include="CameraController.hpp" />
+    <ClInclude Include="Collision.hpp" />
     <ClInclude Include="Enemy.hpp" />
     <ClInclude Include="GameConfig.hpp" />
     <ClInclude Include="GameScene.hpp" />

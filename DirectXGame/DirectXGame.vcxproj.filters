@@ -114,6 +114,9 @@
     <ClInclude Include="CameraController.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Collision.hpp">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="Enemy.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

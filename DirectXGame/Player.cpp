@@ -1,10 +1,43 @@
 #include "Player.hpp"
+#include "Enemy.hpp"
 #include "MapChipField.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
 
 namespace Actor {
+    KamataEngine::Vector3 Player::GetWorldPosition() const {
+        return {
+            worldTransform_.matWorld_.m[3][0],
+            worldTransform_.matWorld_.m[3][1],
+            worldTransform_.matWorld_.m[3][2],
+        };
+    }
+
+    Collision::AABB Player::GetAABB() const {
+        const KamataEngine::Vector3 worldPosition = GetWorldPosition();
+        const KamataEngine::Vector3 halfSize = {
+            kWidth / 2.0f, kHeight / 2.0f, kDepth / 2.0f};
+        return {
+            {
+                worldPosition.x - halfSize.x,
+                worldPosition.y - halfSize.y,
+                worldPosition.z - halfSize.z,
+            },
+            {
+                worldPosition.x + halfSize.x,
+                worldPosition.y + halfSize.y,
+                worldPosition.z + halfSize.z,
+            },
+        };
+    }
+
+    void Player::OnCollision(const Enemy* enemy) {
+        (void)enemy;
+        velocity_.y = World::Config::kJumpAcceleration;
+        onGround_ = false;
+    }
+
     void Player::Initialize(KamataEngine::Model* model, const KamataEngine::Vector3& position) {
         assert(model);
         model_ = model;
