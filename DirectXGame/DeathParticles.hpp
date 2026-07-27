@@ -33,6 +33,8 @@ private:
     KamataEngine::Model* model_ = nullptr;
     const KamataEngine::Camera* camera_ = nullptr;
     std::array<KamataEngine::WorldTransform, kNumParticles> worldTransforms_;
+    KamataEngine::ObjectColor objectColor_;
+    KamataEngine::Vector4 color_ = {1.0f, 1.0f, 1.0f, 1.0f};
     uint32_t timer_ = 0;
 };
 

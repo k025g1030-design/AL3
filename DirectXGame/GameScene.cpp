@@ -4,11 +4,14 @@
 
 namespace Game {
     void GameScene::Initialize() {
+        phase_ = Phase::kPlay;
+        finished_ = false;
         cameraController_.Initialize();
 
         // skyDomeの初期化
-        skyDome_ = new Game::SkyDome();//KamataEngine::Model::CreateFromOBJ("skydome", true);
-        skyDome_->Initialize(KamataEngine::Model::CreateFromOBJ("SkyDome", true), cameraController_.GetCamera());
+        skyDome_ = new Game::SkyDome();
+        skyDomeModel_ = KamataEngine::Model::CreateFromOBJ("SkyDome", true);
+        skyDome_->Initialize(skyDomeModel_, cameraController_.GetCamera());
 
         GenerateMapData();
         GenerateBlocks();
@@ -31,14 +34,24 @@ namespace Game {
     }
 
     void GameScene::Update() {
+        switch (phase_) {
+        case Phase::kPlay:
+            UpdatePlayPhase();
+            break;
+        case Phase::kDeath:
+            UpdateDeathPhase();
+            break;
+        }
+        ChangePhase();
+    }
+
+    void GameScene::UpdatePlayPhase() {
         KamataEngine::Input* input = KamataEngine::Input::GetInstance();
-        if (!player_->IsDead() && input->TriggerKey(DIK_P)) {
+        if (input->TriggerKey(DIK_P)) {
             cameraController_.SetMode(CameraController::Mode::kForcedScroll);
         }
 
         cameraController_.Update();
-        
-
         for (auto box : currentMap_->GetBlocks()) {
             box->Update();
         }
@@ -51,27 +64,40 @@ namespace Game {
         player_->ConstrainToCamera(
             viewRect.left, viewRect.right, viewRect.bottom, viewRect.top);
 
-        const bool isPlayerDead = player_->IsDead();
-        if (isPlayerDead && !wasPlayerDead_) {
-            deathParticles_ = new DeathParticles();
-            deathParticles_->Initialize(
-                deathParticleModel_, cameraController_.GetCamera(),
-                player_->GetWorldPosition());
+        skyDome_->Update();
+    }
+
+    void GameScene::UpdateDeathPhase() {
+        for (auto box : currentMap_->GetBlocks()) {
+            box->Update();
         }
-        wasPlayerDead_ = isPlayerDead;
+        for (Actor::Enemy* enemy : enemies_) {
+            enemy->Update();
+        }
         if (deathParticles_ != nullptr) {
             deathParticles_->Update();
             if (deathParticles_->IsFinished()) {
-                delete deathParticles_;
-                deathParticles_ = nullptr;
+                finished_ = true;
             }
         }
-
-        if (player_->IsDead()) {
-            cameraController_.StopForcedScroll();
-        }
         skyDome_->Update();
-                                                                        
+    }
+
+    void GameScene::ChangePhase() {
+        switch (phase_) {
+        case Phase::kPlay:
+            if (player_->IsDead()) {
+                phase_ = Phase::kDeath;
+                cameraController_.StopForcedScroll();
+                deathParticles_ = new DeathParticles();
+                deathParticles_->Initialize(
+                    deathParticleModel_, cameraController_.GetCamera(),
+                    player_->GetWorldPosition());
+            }
+            break;
+        case Phase::kDeath:
+            break;
+        }
     }
 
     void GameScene::CheckAllCollisions() {
@@ -91,7 +117,9 @@ namespace Game {
             box->Draw(cameraController_.GetCamera());
         }
         
-        player_->Draw(cameraController_.GetCamera());
+        if (phase_ == Phase::kPlay) {
+            player_->Draw(cameraController_.GetCamera());
+        }
         for (Actor::Enemy* enemy : enemies_) {
             enemy->Draw(cameraController_.GetCamera());
         }
@@ -118,8 +146,21 @@ namespace Game {
         delete enemyModel_;
         enemyModel_ = nullptr;
 
+        if (player_ != nullptr) {
+            player_->Finalize();
+        }
         delete player_;
+        player_ = nullptr;
+        delete playerModel_;
+        playerModel_ = nullptr;
+
+        if (skyDome_ != nullptr) {
+            skyDome_->Finalize();
+        }
         delete skyDome_;
+        skyDome_ = nullptr;
+        delete skyDomeModel_;
+        skyDomeModel_ = nullptr;
 
         currentMap_->Finalize();
         delete currentMap_;

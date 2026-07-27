@@ -12,6 +12,9 @@ void DeathParticles::Initialize(
     model_ = model;
     camera_ = camera;
     timer_ = 0;
+    color_ = {1.0f, 1.0f, 1.0f, 1.0f};
+    objectColor_.Initialize();
+    objectColor_.SetColor(color_);
 
     for (KamataEngine::WorldTransform& worldTransform : worldTransforms_) {
         worldTransform.Initialize();
@@ -24,6 +27,11 @@ void DeathParticles::Update() {
     if (IsFinished()) {
         return;
     }
+
+    color_.w =
+        1.0f - static_cast<float>(timer_) /
+                   static_cast<float>(kDuration);
+    objectColor_.SetColor(color_);
 
     for (uint32_t i = 0; i < kNumParticles; ++i) {
         KamataEngine::Vector3 velocity = {kSpeed, 0.0f, 0.0f};
@@ -51,7 +59,7 @@ void DeathParticles::Draw() {
 
     for (const KamataEngine::WorldTransform& worldTransform :
          worldTransforms_) {
-        model_->Draw(worldTransform, *camera_);
+        model_->Draw(worldTransform, *camera_, &objectColor_);
     }
 }
 

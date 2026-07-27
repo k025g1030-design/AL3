@@ -19,6 +19,7 @@ namespace Game{
         void Draw();
         void Finalize();
         void CheckAllCollisions();
+        bool IsFinished() const { return finished_; }
 
     public:
         const uint32_t modelsize = 512;
@@ -42,8 +43,9 @@ namespace Game{
         }
 
         void GeneratePlayer() {
+            playerModel_ = KamataEngine::Model::CreateFromOBJ("player");
             player_ = new Actor::Player();
-            player_->Initialize(KamataEngine::Model::CreateFromOBJ("player"), currentMap_->GetPlayerRespawnPosition());
+            player_->Initialize(playerModel_, currentMap_->GetPlayerRespawnPosition());
         }
 
         void GenerateEnemies() {
@@ -62,9 +64,19 @@ namespace Game{
         }
 
 	private:
+        enum class Phase {
+            kPlay,
+            kDeath,
+        };
+
+        void UpdatePlayPhase();
+        void UpdateDeathPhase();
+        void ChangePhase();
+
         uint32_t soundDataHandle_ = 0;
         uint32_t voiceHandle_ = 0;
         SkyDome* skyDome_ = nullptr;
+        KamataEngine::Model* skyDomeModel_ = nullptr;
 
         
 
@@ -73,14 +85,15 @@ namespace Game{
 
 
         Actor::Player* player_ = nullptr;
+        KamataEngine::Model* playerModel_ = nullptr;
         KamataEngine::Model* enemyModel_ = nullptr;
         std::vector<Actor::Enemy*> enemies_;
 
         Assets::MapChipField* currentMap_ = nullptr;
         KamataEngine::Model* deathParticleModel_ = nullptr;
         DeathParticles* deathParticles_ = nullptr;
-        bool wasPlayerDead_ = false;
-       
+        Phase phase_ = Phase::kPlay;
+        bool finished_ = false;
 
 
         
