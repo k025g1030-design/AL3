@@ -17,6 +17,7 @@ namespace Game {
 
         GeneratePlayer();
         player_->SetMapChipField(currentMap_);
+        GenerateEnemies();
 
         cameraController_.SetTarget(player_);
         cameraController_.SetMapField(currentMap_);
@@ -39,6 +40,9 @@ namespace Game {
             box->Update();
         }
         player_->Update();
+        for (Actor::Enemy* enemy : enemies_) {
+            enemy->Update();
+        }
         const Rect viewRect = cameraController_.GetViewRect();
         player_->ConstrainToCamera(
             viewRect.left, viewRect.right, viewRect.bottom, viewRect.top);
@@ -57,6 +61,9 @@ namespace Game {
         }
         
         player_->Draw(cameraController_.GetCamera());
+        for (Actor::Enemy* enemy : enemies_) {
+            enemy->Draw(cameraController_.GetCamera());
+        }
         skyDome_->Draw(cameraController_.GetCamera());
 
         KamataEngine::Model::PostDraw();
@@ -64,9 +71,19 @@ namespace Game {
        
     }
     void GameScene::Finalize() {
+        for (Actor::Enemy* enemy : enemies_) {
+            enemy->Finalize();
+            delete enemy;
+        }
+        enemies_.clear();
+        delete enemyModel_;
+        enemyModel_ = nullptr;
+
         delete player_;
         delete skyDome_;
 
         currentMap_->Finalize();
+        delete currentMap_;
+        currentMap_ = nullptr;
     }
 }

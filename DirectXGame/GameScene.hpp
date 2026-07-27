@@ -6,6 +6,8 @@
 #include "CameraController.hpp"
 
 #include "Player.hpp"
+#include "Enemy.hpp"
+#include <vector>
 
 
 namespace Game{
@@ -42,6 +44,18 @@ namespace Game{
             player_->Initialize(KamataEngine::Model::CreateFromOBJ("player"), currentMap_->GetPlayerRespawnPosition());
         }
 
+        void GenerateEnemies() {
+            // TODO: Enemyモデルを用意したら、"player" をEnemyのOBJフォルダー名に置き換える。
+            // 現在は課題の指定どおりPlayerモデルをEnemyにも流用する。
+            enemyModel_ = KamataEngine::Model::CreateFromOBJ("enemy");
+            for (const KamataEngine::Vector3& position :
+                 currentMap_->GetEnemyRespawnPositions()) {
+                Actor::Enemy* enemy = new Actor::Enemy();
+                enemy->Initialize(enemyModel_, position);
+                enemies_.push_back(enemy);
+            }
+        }
+
         void GenerateMapData() {
             currentMap_ = new Assets::MapChipField();
             currentMap_->LoadData();
@@ -59,6 +73,8 @@ namespace Game{
 
 
         Actor::Player* player_ = nullptr;
+        KamataEngine::Model* enemyModel_ = nullptr;
+        std::vector<Actor::Enemy*> enemies_;
 
         Assets::MapChipField* currentMap_ = nullptr;
        
